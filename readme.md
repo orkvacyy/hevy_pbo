@@ -6,7 +6,7 @@ Proyek ini adalah dibuat atas dasar kebutuhan tugas akhir praktikum Pemrograman 
 | Layer | Teknologi 
 |-------|-----------
 | **Backend** | Java 17+
-| **Server** |  - 
+| **Server** |  Spring Boot
 | **Database** | MySQL  
 | **Frontend** | HTML5, Tailwind CSS, Vanilla JS 
 
