@@ -40,6 +40,21 @@ Proyek ini adalah dibuat atas dasar kebutuhan tugas akhir praktikum Pemrograman 
 *   **Dapat Melihat Riwayat Latihan (History/Dashboard)**
     *   Sistem dapat menampilkan daftar riwayat sesi *workout* yang pernah diselesaikan oleh *user* tersebut.
     *   Sistem dapat menampilkan detail informasi dari riwayat *workout* (durasi, daftar *exercise*, dan log per *set*).
+
+
+### 3. Non-Functional Requirements (NFR)
+
+*   **Security**
+    *   Sistem harus mengenkripsi kata sandi pengguna (*password hashing*) sebelum menyimpannya ke *database*.
+    *   Sistem harus memiliki kontrol otorisasi yang ketat; *User* tidak boleh bisa mengakses, mengedit, atau menghapus sesi *workout* maupun *custom exercise* milik *User* lain melalui modifikasi URL atau *request*.
+*   **Performance**
+    *   Waktu muat halaman (*page load time*) harus kurang dari 3 detik pada koneksi internet standar untuk memastikan kenyamanan penggunaan.
+    *   Proses penyimpanan data *Set* atau penyelesaian sesi *workout* ke *database* harus merespons secara instan kurang dari 3 detik.
+*   **Maintainability**
+    *   Kode *backend* harus ditulis menggunakan standar *Clean Code* dan menerapkan prinsip *Don't Repeat Yourself*.
+    *   Arsitektur *backend* secara ketat menerapkan pilar Pemrograman Berorientasi Objek (Class, Encapsulation, Inheritance, Polymorphism, Abstraction) agar pengembangan yang akan datang mudah ditambahkan (scalable) tanpa merombak seluruh sistem yang ada.
+*   **Data Integrity**
+    *   Sistem harus memastikan integritas relasional; jika sebuah *Exercise* dihapus dari *library* global, riwayat latihan pengguna yang pernah menggunakan *exercise* tersebut tidak boleh rusak atau ikut terhapus.
 ---
 
 # Agile Development Roadmap (Hevy)
