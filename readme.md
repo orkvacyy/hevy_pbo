@@ -3,12 +3,12 @@ Proyek ini adalah dibuat atas dasar kebutuhan tugas akhir praktikum Pemrograman 
 
 ## 🛠️ Tech Stack Target
 
-| Layer | Teknologi |
-|-------|-----------|
-| **Backend** | Java 17+|
-| **Server** |  - |
-| **Database** | MySQL (menggunakan script `hevy_pemvis.sql`) |
-| **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
+| Layer | Teknologi 
+|-------|-----------
+| **Backend** | Java 17+
+| **Server** |  - 
+| **Database** | MySQL  
+| **Frontend** | HTML5, Tailwind CSS, Vanilla JS 
 
 ## Functional Requirements
 
