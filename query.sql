@@ -26,7 +26,7 @@ create table exercise (
 	muscle_group enum('chest','back','shoulders','biceps','triceps','quad','hamstring','core','other') not null default 'other',
 	equipment enum('barbell', 'dumbbell','machine','cable','bodyweight','other') not null default 'other',
 	owner_id bigint null default null,
-	is_deleted boolean not null default false,
+	is_deleted boolean not null default false, -- soft delete
 	created_at timestamp not null default CURRENT_TIMESTAMP,
 	
 	primary key(id),
