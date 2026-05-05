@@ -1,12 +1,52 @@
-# Agile Development Roadmap (Hevy)
-
+# Project Akhir PBO
 Proyek ini adalah dibuat atas dasar kebutuhan tugas akhir praktikum Pemrograman Berbasis Objek. Modul yang dimaksud dalam file ini yaitu modul praktikum yang telah saya pelajari.
+
+## 🛠️ Tech Stack Target
+
+| Layer | Teknologi |
+|-------|-----------|
+| **Backend** | Java 17+|
+| **Server** |  - |
+| **Database** | MySQL (menggunakan script `hevy_pemvis.sql`) |
+| **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
+
+## Functional Requirements
+
+### 1. Admin
+*   **Dapat Mengelola database exercise global**
+    *   Sistem dapat menampilkan database global pada admin dan user biasa
+    *   Sistem memungkinkan admin melakukan CRUD pada exercise global.
+    *   Sistem dapat menyimpan perubahan pada CRUD yang telah dilakukan admin di exercise global.
+    *   Sistem dapat melakukan CRUD pada database exercise local juga (database exercise per user yang dibuat custom).
+*   **Dapat Mengelola User**
+    *   Sistem dapat menampilkan *list* akun *user* yang terdaftar.
+    *   Sistem dapat melakukan CRUD pada *user* (contoh : menonaktifkan akundan mereset *password*).
+    *   Sistem dapat menyimpan perubahan data akun *user*.
+
+### 2. User
+*   **Dapat Mengelola Akun**
+    *   Sistem memungkinkan *user* untuk melakukan registrasi akun baru.
+    *   Sistem memungkinkan *user* untuk melakukan *login* ke dalam sistem.
+*   **Dapat Mengelola Database Exercise Local (Custom Exercise)**
+    *   Sistem dapat menampilkan daftar *exercise* (gabungan dari *exercise* global dan *exercise local* yang dibuat oleh *user* tersebut).
+    *   Sistem memungkinkan *user* melakukan CRUD pada *exercise local* miliknya sendiri.
+    *   Sistem mencegah *user* untuk mengedit atau menghapus *exercise* global maupun *exercise local* milik *user* lain.
+*   **Dapat Mengelola Sesi Latihan (Workout Session)**
+    *   Sistem memungkinkan *user* untuk memulai sesi *workout* baru.
+    *   Sistem memungkinkan *user* untuk mencari dan memilih *exercise* (global maupun *local*) ke dalam sesi *workout* yang sedang aktif.
+    *   Sistem memungkinkan *user* melakukan CRUD pada *Set* latihan (mencatat berat beban dalam kg dan jumlah repetisi) pada tiap *exercise* di sesi tersebut.
+    *   Sistem memungkinkan *user* untuk menyelesaikan dan menyimpan sesi *workout* beserta seluruh *set*-nya ke dalam *database*.
+    *   Sistem memungkinkan *user* untuk membatalkan sesi *workout* yang sedang berjalan tanpa menyimpannya.
+*   **Dapat Melihat Riwayat Latihan (History/Dashboard)**
+    *   Sistem dapat menampilkan daftar riwayat sesi *workout* yang pernah diselesaikan oleh *user* tersebut.
+    *   Sistem dapat menampilkan detail informasi dari riwayat *workout* (durasi, daftar *exercise*, dan log per *set*).
+---
+
+# Agile Development Roadmap (Hevy)
+Saya membagi pengembangan ini ke dalam **4 Sprint** (setiap Sprint fokus pada satu set modul OOP dan fitur fungsional).
 
 ---
 
-## Sprint Plan
-
-Saya membagi pengembangan ini ke dalam **4 Sprint** (setiap Sprint fokus pada satu set modul OOP dan fitur fungsional).
 
 ### Sprint 1: Foundation & Core OOP (Modul 1 & 2)
 **Fokus:** Setup Arsitektur, Database, dan Class.
@@ -46,22 +86,10 @@ Saya membagi pengembangan ini ke dalam **4 Sprint** (setiap Sprint fokus pada sa
 
 ---
 
-## 🛠️ Tech Stack Target
-
-| Layer | Teknologi |
-|-------|-----------|
-| **Backend** | Java 17+|
-| **Server** |  - |
-| **Database** | MySQL (menggunakan script `hevy_pemvis.sql`) |
-| **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
-
----
-
 ## Penerapan Modul Java OOP pada Hevy Web
-
 Berdasarkan modul yang Anda berikan, berikut rencana mapping-nya:
 1. **Modul 1 & 2 (Basic/Class):** Membuat objek `WorkoutSession` sebagai blueprint utama.
-2. **Modul 3 (Encapsulation):** Mengamankan `weight` dan `reps` agar tidak bisa diinput negatif lewat setter.
+2. **Modul 3 (Encapsulation):** Mengamankan `weight` dan `reps` agar tidak bisa diinput negatif lewat setter. Penggunaan *Access Modifier* (`private`, `public`, `protected`) dan *Getter/Setter*.
 3. **Modul 4 (Inheritance):** `WeightedExercise` extends `BaseExercise`.
 4. **Modul 5 (Polymorphism):** Menggunakan List `BaseExercise` yang bisa menampung berbagai jenis gerakan.
 5. **Modul 6 (Abstraction):** Interface `WorkoutAction` untuk method `start()`, `pause()`, dan `finish()`.
