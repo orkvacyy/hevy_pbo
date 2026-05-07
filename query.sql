@@ -22,7 +22,7 @@ create table users(
 create table exercises (
   id BIGINT not null auto_increment,
   name varchar(100) not null,
-  category ENUM('strenght', 'cardio') not null,
+  category ENUM('strength', 'cardio') not null,
   muscle_group enum(
     'chest',
     'back',
@@ -46,7 +46,7 @@ create table exercises (
   is_deleted boolean not null default false,
   created_at timestamp not null default CURRENT_TIMESTAMP,
   primary key (id),
-  constraint fk_exercdise_owner foreign key (owner_id) references users (id) on delete set null on update CASCADE
+  constraint fk_exercise_owner foreign key (owner_id) references users (id) on delete set null on update CASCADE
 );
 	
 	
