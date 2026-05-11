@@ -1,4 +1,4 @@
-# Milestone & Progress Tracker — Hevy PBO
+# Milestone & Progress Tracker - Hevy PBO
 
 > Dokumen ini mencatat progress pengembangan project akhir Pemrograman Berbasis Objek.
 > Update status setiap kali satu item selesai.

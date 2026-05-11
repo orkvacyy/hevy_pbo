@@ -9,6 +9,9 @@ Proyek ini adalah dibuat atas dasar kebutuhan tugas akhir praktikum Pemrograman 
 | **Server** |  Spring Boot
 | **Database** | MySQL  
 | **Frontend** | HTML5, Tailwind CSS, Vanilla JS 
+---
+[Cek Progress (milestone)](milestone.md)
+
 
 ## Functional Requirements
 
