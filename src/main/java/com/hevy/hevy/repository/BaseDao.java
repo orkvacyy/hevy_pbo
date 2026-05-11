@@ -1,5 +1,7 @@
 package com.hevy.hevy.repository;
 
+public interface BaseDao {
+}
 import java.util.List;
 import java.util.Optional;
 
