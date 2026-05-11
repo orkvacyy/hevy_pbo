@@ -7,7 +7,7 @@ public abstract class BaseExercise {
     private String name;
     private String muscleGroup;
     private String equipment;
-    private Long ownerId
+    private Long ownerId;
     private boolean deleted;
 
     // constructor
