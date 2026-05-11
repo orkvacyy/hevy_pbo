@@ -21,6 +21,7 @@ public abstract class BaseExercise {
     }
 
     public abstract double calculateVolume(double weight, int reps, int sets);
+    public abstract String getCategory();
 
     // manual getter setter
     public Long getId() { return id; }
