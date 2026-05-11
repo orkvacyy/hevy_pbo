@@ -39,9 +39,9 @@
 
 | # | Item | Status | Catatan |
 |---|------|--------|---------|
-| 1 | Class `DatabaseConnection` (singleton) | ⬜ | |
-| 2 | Interface / Abstract `BaseDao<T>` | ⬜ | Generic CRUD contract |
-| 3 | `ExerciseDao` — CRUD exercise (global + local) | ⬜ | Query: Q1 di `query.sql` |
+| 1 | Class `DatabaseConnection` (singleton) | ✅ | |
+| 2 | Interface / Abstract `BaseDao<T>` | ✅ | Generic CRUD contract |
+| 3 | `ExerciseDao` — CRUD exercise (global + local) | ✅ | Query: Q1 di `query.sql` |
 | 4 | `UserDao` — CRUD user | ⬜ | |
 | 5 | `WorkoutSessionDao` — simpan & ambil sesi | ⬜ | Query: Q2, Q4 di `query.sql` |
 | 6 | `WorkoutExerciseDao` + `WorkoutSetDao` | ⬜ | Query: Q3 di `query.sql` |
