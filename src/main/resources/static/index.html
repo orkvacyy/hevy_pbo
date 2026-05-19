@@ -21,7 +21,7 @@
     </div>
 
     <nav class="flex-1 p-4 space-y-1">
-        <a href="#library" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <a href="/" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
             Library
         </a>
@@ -29,19 +29,16 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Workout
         </a>
-        <a href="#history" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <a href="/history.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             History
         </a>
     </nav>
 
-    <!-- inputan user id -->
     <div class="p-4 border-t border-white/5">
         <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Logged in as</p>
         <p id="usernameLabel" class="text-sm font-semibold text-white/80">-</p>
-        <button onclick="handleLogout()" class="mt-3 w-full btn-ghost py-2 rounded-lg text-xs font-semibold">
-            Logout
-        </button>
+        <button onclick="handleLogout()" class="mt-3 w-full btn-ghost py-2 rounded-lg text-xs font-semibold">Logout</button>
         <input id="userIdInput" type="hidden" value="1">
     </div>
 </aside>
@@ -84,81 +81,24 @@
         </div>
     </section>
 
-    <!-- Workspace -->
-    <section class="px-8 pt-6 pb-8 flex gap-5 flex-1" id="library">
-
-        <!-- Exercise table -->
-        <div class="flex-1 min-w-0">
-            <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
-                <div id="statusMessage" class="px-5 py-3 text-xs text-white/30 border-b border-white/5">Memuat library...</div>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                        <tr class="border-b border-white/5">
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Nama</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Kategori</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Muscle</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Equipment</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Scope</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Aksi</th>
-                        </tr>
-                        </thead>
-                        <tbody id="exerciseTableBody"></tbody>
-                    </table>
-                </div>
+    <section class="px-8 pt-6 pb-8">
+        <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
+            <div id="statusMessage" class="px-5 py-3 text-xs text-white/30 border-b border-white/5">Memuat library...</div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                    <tr class="border-b border-white/5">
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Nama</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Kategori</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Muscle</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Equipment</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Scope</th>
+                    </tr>
+                    </thead>
+                    <tbody id="exerciseTableBody"></tbody>
+                </table>
             </div>
         </div>
-
-        <!-- Session panel -->
-        <aside id="session" class="w-72 shrink-0">
-            <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden sticky top-24">
-
-                <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Session</p>
-                        <h2 class="text-base font-bold" style="font-family:'Syne',sans-serif;">Sesi Aktif</h2>
-                    </div>
-                    <button id="startSessionButton" class="btn-primary px-4 py-2 rounded-lg text-xs font-semibold transition-all">
-                        Start
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-2 border-b border-white/5">
-                    <div class="px-5 py-4 border-r border-white/5">
-                        <p id="sessionIdLabel" class="text-xl font-bold" style="font-family:'Syne',sans-serif;">-</p>
-                        <p class="text-xs text-white/30 mt-0.5">Session ID</p>
-                    </div>
-                    <div class="px-5 py-4">
-                        <p id="sessionStatusLabel" class="text-xl font-bold" style="font-family:'Syne',sans-serif;">Idle</p>
-                        <p class="text-xs text-white/30 mt-0.5">Status</p>
-                    </div>
-                </div>
-
-                <div id="sessionMessage" class="px-5 py-3 text-xs text-white/40 border-b border-white/5">
-                    Belum ada sesi aktif.
-                </div>
-
-                <ul id="selectedExerciseList" class="divide-y divide-white/5 max-h-48 overflow-y-auto"></ul>
-
-                <div class="px-5 py-4 border-t border-white/5">
-                    <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Notes</p>
-                    <textarea id="notesInput" rows="3" placeholder="Push day..."
-                              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 resize-none transition-colors"></textarea>
-                </div>
-
-                <div class="px-5 pb-5 grid grid-cols-2 gap-2">
-                    <button id="finishSessionButton" disabled
-                            class="btn-primary py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                        Finish
-                    </button>
-                    <button id="cancelSessionButton" disabled
-                            class="btn-ghost py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                        Cancel
-                    </button>
-                </div>
-
-            </div>
-        </aside>
     </section>
 
 </main>
@@ -169,11 +109,9 @@
       window.location.href = "/login.html";
     }
 
-    // Guard: cek session, load app.js hanya setelah userId siap
     (async () => {
       const res = await fetch("/api/auth/me");
       if (!res.ok) { window.location.href = "/login.html"; return; }
-
       const user = await res.json();
       document.getElementById("userIdInput").value = user.id;
       document.getElementById("usernameLabel").textContent = user.username;
