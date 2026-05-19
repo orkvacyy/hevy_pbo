@@ -1,8 +1,12 @@
 package com.hevy.hevy.controller;
 
-import com.hevy.hevy.model.WorkoutExercise;
-import com.hevy.hevy.model.WorkoutSession;
-import com.hevy.hevy.model.WorkoutSet;
+import com.hevy.hevy.dto.request.AddExerciseRequest;
+import com.hevy.hevy.dto.request.AddSetRequest;
+import com.hevy.hevy.dto.request.FinishSessionRequest;
+import com.hevy.hevy.dto.request.StartSessionRequest;
+import com.hevy.hevy.dto.response.WorkoutExerciseResponse;
+import com.hevy.hevy.dto.response.WorkoutSessionResponse;
+import com.hevy.hevy.dto.response.WorkoutSetResponse;
 import com.hevy.hevy.service.WorkoutService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,57 +27,58 @@ import java.util.Map;
 @RequestMapping("/api/workouts")
 public class WorkoutApiController {
 
+    // GET /api/workouts?userId=1 — riwayat sesi user
     @GetMapping
-    public List<Map<String, Object>> findByUser(@RequestParam Long userId) {
+    public List<WorkoutSessionResponse> findByUser(@RequestParam Long userId) {
         WorkoutService workoutService = new WorkoutService();
         return workoutService.findSessionsByUser(userId).stream()
-                .map(this::toSessionResponse)
+                .map(WorkoutSessionResponse::from)
                 .toList();
     }
 
+    // GET /api/workouts/active?userId=1
     @GetMapping("/active")
-    public ResponseEntity<Map<String, Object>> findActive(@RequestParam Long userId) {
+    public ResponseEntity<WorkoutSessionResponse> findActive(@RequestParam Long userId) {
         WorkoutService workoutService = new WorkoutService();
         return workoutService.findActiveSession(userId)
-                .map(session -> ResponseEntity.ok(toSessionResponse(session)))
+                .map(session -> ResponseEntity.ok(WorkoutSessionResponse.from(session)))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+    // POST /api/workouts/start
     @PostMapping("/start")
-    public Map<String, Object> start(@RequestBody StartSessionRequest request) {
+    public WorkoutSessionResponse start(@RequestBody StartSessionRequest req) {
         WorkoutService workoutService = new WorkoutService();
-        return toSessionResponse(workoutService.startSession(request.userId()));
+        return WorkoutSessionResponse.from(workoutService.startSession(req.getUserId()));
     }
 
+    // POST /api/workouts/{sessionId}/exercises
     @PostMapping("/{sessionId}/exercises")
-    public Map<String, Object> addExercise(@PathVariable Long sessionId, @RequestBody AddExerciseRequest request) {
+    public WorkoutExerciseResponse addExercise(
+            @PathVariable Long sessionId,
+            @RequestBody AddExerciseRequest req) {
+
         WorkoutService workoutService = new WorkoutService();
-        return toWorkoutExerciseResponse(workoutService.addExercise(request.userId(), sessionId, request.exerciseId()));
+        return WorkoutExerciseResponse.from(
+                workoutService.addExercise(req.getUserId(), sessionId, req.getExerciseId())
+        );
     }
 
-    @PostMapping("/{sessionId}/finish")
-    public Map<String, Object> finish(@PathVariable Long sessionId, @RequestBody FinishSessionRequest request) {
-        WorkoutService workoutService = new WorkoutService();
-        return toSessionResponse(workoutService.finishSession(request.userId(), sessionId, request.notes()));
-    }
-
+    // POST /api/workouts/exercises/{workoutExerciseId}/sets
     @PostMapping("/exercises/{workoutExerciseId}/sets")
-    public ResponseEntity<Map<String, Object>> addSet(
+    public ResponseEntity<WorkoutSetResponse> addSet(
             @PathVariable Long workoutExerciseId,
-            @RequestBody AddSetRequest request) {
+            @RequestBody AddSetRequest req) {
 
         WorkoutService workoutService = new WorkoutService();
-        WorkoutSet set = workoutService.addSet(request.userId(), workoutExerciseId, request.weightKg(), request.reps());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "id",                 set.getId(),
-                "workoutExerciseId",  set.getWorkoutExerciseId(),
-                "setNumber",          set.getSetNumber(),
-                "weightKg",           set.getWeightKg(),
-                "reps",               set.getReps()
-        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                WorkoutSetResponse.from(
+                        workoutService.addSet(req.getUserId(), workoutExerciseId, req.getWeightKg(), req.getReps())
+                )
+        );
     }
 
+    // DELETE /api/workouts/exercises/sets/{setId}
     @DeleteMapping("/exercises/sets/{setId}")
     public ResponseEntity<Void> deleteSet(
             @PathVariable Long setId,
@@ -85,66 +89,36 @@ public class WorkoutApiController {
         return ResponseEntity.noContent().build();
     }
 
-    public record AddSetRequest(Long userId, double weightKg, int reps) {}
+    // POST /api/workouts/{sessionId}/finish
+    @PostMapping("/{sessionId}/finish")
+    public WorkoutSessionResponse finish(
+            @PathVariable Long sessionId,
+            @RequestBody FinishSessionRequest req) {
 
+        WorkoutService workoutService = new WorkoutService();
+        return WorkoutSessionResponse.from(
+                workoutService.finishSession(req.getUserId(), sessionId, req.getNotes())
+        );
+    }
+
+    // DELETE /api/workouts/{sessionId} — cancel sesi
     @DeleteMapping("/{sessionId}")
-    public ResponseEntity<Void> cancel(@PathVariable Long sessionId, @RequestParam Long userId) {
+    public ResponseEntity<Void> cancel(
+            @PathVariable Long sessionId,
+            @RequestParam Long userId) {
+
         WorkoutService workoutService = new WorkoutService();
         workoutService.cancelSession(userId, sessionId);
         return ResponseEntity.noContent().build();
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException error) {
-        return ResponseEntity.badRequest().body(Map.of("message", error.getMessage()));
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException e) {
+        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
     }
 
     @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<Map<String, String>> handleForbidden(SecurityException error) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", error.getMessage()));
-    }
-
-    private Map<String, Object> toSessionResponse(WorkoutSession session) {
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("id", session.getId());
-        response.put("userId", session.getUserId());
-        response.put("notes", session.getNotes());
-        response.put("startedAt", session.getStartedAt());
-        response.put("finishedAt", session.getFinishedAt());
-        response.put("active", session.isActive());
-        response.put("paused", session.isPaused());
-        response.put("durationMinutes", session.getDurationMinutes());
-        response.put("exercises", session.getExercises().stream().map(this::toWorkoutExerciseResponse).toList());
-        return response;
-    }
-
-    private Map<String, Object> toWorkoutExerciseResponse(WorkoutExercise workoutExercise) {
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("id", workoutExercise.getId());
-        response.put("sessionId", workoutExercise.getSessionId());
-        response.put("exerciseId", workoutExercise.getExerciseId());
-        response.put("exerciseNameSnapshot", workoutExercise.getExerciseNameSnapshot());
-        response.put("orderIndex", workoutExercise.getOrderIndex());
-        response.put("sets", workoutExercise.getSets().stream().map(this::toSetResponse).toList());
-        return response;
-    }
-
-    private Map<String, Object> toSetResponse(WorkoutSet set) {
-        return Map.of(
-                "id", set.getId(),
-                "workoutExerciseId", set.getWorkoutExerciseId(),
-                "setNumber", set.getSetNumber(),
-                "weightKg", set.getWeightKg(),
-                "reps", set.getReps()
-        );
-    }
-
-    public record StartSessionRequest(Long userId) {
-    }
-
-    public record AddExerciseRequest(Long userId, Long exerciseId) {
-    }
-
-    public record FinishSessionRequest(Long userId, String notes) {
+    public ResponseEntity<Map<String, String>> handleForbidden(SecurityException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", e.getMessage()));
     }
 }
