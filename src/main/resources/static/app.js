@@ -1,257 +1,210 @@
 const state = {
-    exercises: [],
-    search: "",
-    userId: 1,
-    activeSession: null
+  exercises: [],
+  search: "",
+  userId: 1,
+  activeSession: null,
 };
 
-const tableBody = document.querySelector("#exerciseTableBody");
-const statusMessage = document.querySelector("#statusMessage");
-const searchInput = document.querySelector("#searchInput");
-const userIdInput = document.querySelector("#userIdInput");
-const refreshButton = document.querySelector("#refreshButton");
-const heroStartButton = document.querySelector("#heroStartButton");
-const totalCount = document.querySelector("#totalCount");
-const strengthCount = document.querySelector("#strengthCount");
-const cardioCount = document.querySelector("#cardioCount");
-const startSessionButton = document.querySelector("#startSessionButton");
-const finishSessionButton = document.querySelector("#finishSessionButton");
-const cancelSessionButton = document.querySelector("#cancelSessionButton");
-const sessionIdLabel = document.querySelector("#sessionIdLabel");
-const sessionStatusLabel = document.querySelector("#sessionStatusLabel");
-const sessionMessage = document.querySelector("#sessionMessage");
-const selectedExerciseList = document.querySelector("#selectedExerciseList");
-const notesInput = document.querySelector("#notesInput");
-const previewStatus = document.querySelector("#previewStatus");
-const previewSessionName = document.querySelector("#previewSessionName");
-const previewExerciseCount = document.querySelector("#previewExerciseCount");
-const previewLibraryCount = document.querySelector("#previewLibraryCount");
+// DOM refs
+const $ = (id) => document.getElementById(id);
+const tableBody       = $("exerciseTableBody");
+const statusMsg       = $("statusMessage");
+const searchInput     = $("searchInput");
+const userIdInput     = $("userIdInput");
+const refreshButton   = $("refreshButton");
+const totalCount      = $("totalCount");
+const strengthCount   = $("strengthCount");
+const cardioCount     = $("cardioCount");
+const startBtn        = $("startSessionButton");
+const finishBtn       = $("finishSessionButton");
+const cancelBtn       = $("cancelSessionButton");
+const sessionIdLabel  = $("sessionIdLabel");
+const sessionStatus   = $("sessionStatusLabel");
+const sessionMsg      = $("sessionMessage");
+const exerciseList    = $("selectedExerciseList");
+const notesInput      = $("notesInput");
+
+// data fetch
 
 async function loadExercises() {
-    statusMessage.textContent = "Memuat library...";
-    try {
-        const response = await fetch(`/api/exercises?userId=${encodeURIComponent(state.userId)}`);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        state.exercises = await response.json();
-        render();
-    } catch (error) {
-        state.exercises = [];
-        render();
-        statusMessage.textContent = "Library belum bisa dimuat. Pastikan database aktif dan schema sudah dibuat.";
-    }
+  statusMsg.textContent = "Memuat library...";
+  try {
+    const res = await fetch(`/api/exercises?userId=${state.userId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    state.exercises = await res.json();
+    render();
+  } catch {
+    state.exercises = [];
+    render();
+    statusMsg.textContent = "Gagal memuat. Pastikan database aktif.";
+  }
 }
 
 async function loadActiveSession() {
-    try {
-        const response = await fetch(`/api/workouts/active?userId=${encodeURIComponent(state.userId)}`);
-        if (response.status === 204) {
-            state.activeSession = null;
-            renderSession();
-            return;
-        }
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        state.activeSession = await response.json();
-        renderSession();
-    } catch (error) {
-        state.activeSession = null;
-        renderSession("Sesi aktif belum bisa dimuat.");
-    }
+  try {
+    const res = await fetch(`/api/workouts/active?userId=${state.userId}`);
+    if (res.status === 204) { state.activeSession = null; renderSession(); return; }
+    if (!res.ok) throw new Error();
+    state.activeSession = await res.json();
+    renderSession();
+  } catch {
+    state.activeSession = null;
+    renderSession();
+  }
 }
 
+//session
+
 async function startSession() {
-    try {
-        const response = await postJson("/api/workouts/start", { userId: state.userId });
-        state.activeSession = response;
-        renderSession("Sesi aktif siap.");
-    } catch (error) {
-        renderSession(error.message);
-    }
+  try {
+    state.activeSession = await postJson("/api/workouts/start", { userId: state.userId });
+    renderSession("Sesi dimulai.");
+  } catch (e) { renderSession(e.message); }
 }
 
 async function addExercise(exerciseId) {
-    if (!state.activeSession) {
-        renderSession("Mulai sesi dulu.");
-        return;
-    }
-
-    try {
-        await postJson(`/api/workouts/${state.activeSession.id}/exercises`, {
-            userId: state.userId,
-            exerciseId
-        });
-        await loadActiveSession();
-        renderSession("Exercise masuk ke sesi.");
-    } catch (error) {
-        renderSession(error.message);
-    }
+  if (!state.activeSession) { renderSession("Mulai sesi dulu."); return; }
+  try {
+    await postJson(`/api/workouts/${state.activeSession.id}/exercises`, {
+      userId: state.userId,
+      exerciseId,
+    });
+    await loadActiveSession();
+    renderSession("Exercise ditambahkan.");
+  } catch (e) { renderSession(e.message); }
 }
 
 async function finishSession() {
-    if (!state.activeSession) {
-        renderSession("Belum ada sesi aktif.");
-        return;
-    }
-
-    try {
-        const response = await postJson(`/api/workouts/${state.activeSession.id}/finish`, {
-            userId: state.userId,
-            notes: notesInput.value
-        });
-        state.activeSession = response.active ? response : null;
-        notesInput.value = "";
-        renderSession("Sesi selesai.");
-    } catch (error) {
-        renderSession(error.message);
-    }
+  if (!state.activeSession) return;
+  try {
+    const res = await postJson(`/api/workouts/${state.activeSession.id}/finish`, {
+      userId: state.userId,
+      notes: notesInput.value,
+    });
+    state.activeSession = res.active ? res : null;
+    notesInput.value = "";
+    renderSession("Sesi selesai.");
+  } catch (e) { renderSession(e.message); }
 }
 
 async function cancelSession() {
-    if (!state.activeSession) {
-        renderSession("Belum ada sesi aktif.");
-        return;
+  if (!state.activeSession) return;
+  try {
+    const res = await fetch(
+      `/api/workouts/${state.activeSession.id}?userId=${state.userId}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) {
+      const p = await res.json().catch(() => ({}));
+      throw new Error(p.message || `HTTP ${res.status}`);
     }
-
-    try {
-        const response = await fetch(`/api/workouts/${state.activeSession.id}?userId=${encodeURIComponent(state.userId)}`, {
-            method: "DELETE"
-        });
-        if (!response.ok) {
-            const payload = await readJson(response);
-            throw new Error(payload.message || `HTTP ${response.status}`);
-        }
-        state.activeSession = null;
-        notesInput.value = "";
-        renderSession("Sesi dibatalkan.");
-    } catch (error) {
-        renderSession(error.message);
-    }
+    state.activeSession = null;
+    notesInput.value = "";
+    renderSession("Sesi dibatalkan.");
+  } catch (e) { renderSession(e.message); }
 }
 
-async function postJson(url, body) {
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
-    const payload = await readJson(response);
-    if (!response.ok) {
-        throw new Error(payload.message || `HTTP ${response.status}`);
-    }
-    return payload;
-}
-
-async function readJson(response) {
-    const text = await response.text();
-    return text ? JSON.parse(text) : {};
-}
+// ─── Rendering ────────────────────────────────────────────────────────────────
 
 function render() {
-    const filteredExercises = state.exercises.filter((exercise) => {
-        const keyword = state.search.toLowerCase();
-        return [
-            exercise.name,
-            exercise.category,
-            exercise.muscleGroup,
-            exercise.equipment,
-            exercise.scope
-        ].some((value) => String(value).toLowerCase().includes(keyword));
-    });
+  const keyword = state.search.toLowerCase();
+  const filtered = state.exercises.filter((ex) =>
+    [ex.name, ex.category, ex.muscleGroup, ex.equipment, ex.scope].some(
+      (v) => String(v).toLowerCase().includes(keyword)
+    )
+  );
 
-    tableBody.innerHTML = "";
-    for (const exercise of filteredExercises) {
-        tableBody.append(createRow(exercise));
-    }
+  tableBody.innerHTML = "";
+  filtered.forEach((ex) => tableBody.append(buildRow(ex)));
 
-    totalCount.textContent = state.exercises.length;
-    strengthCount.textContent = state.exercises.filter((exercise) => exercise.category === "strength").length;
-    cardioCount.textContent = state.exercises.filter((exercise) => exercise.category === "cardio").length;
-    previewLibraryCount.textContent = state.exercises.length;
-    statusMessage.textContent = filteredExercises.length === 0
-        ? "Tidak ada exercise yang cocok."
-        : `${filteredExercises.length} exercise ditampilkan.`;
-    renderSession();
+  totalCount.textContent    = state.exercises.length;
+  strengthCount.textContent = state.exercises.filter((e) => e.category === "strength").length;
+  cardioCount.textContent   = state.exercises.filter((e) => e.category === "cardio").length;
+
+  statusMsg.textContent = filtered.length === 0
+    ? "Tidak ada exercise yang cocok."
+    : `${filtered.length} exercise ditampilkan.`;
+
+  renderSession();
 }
 
-function createRow(exercise) {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${escapeHtml(exercise.name)}</td>
-        <td><span class="badge ${escapeHtml(exercise.category)}">${escapeHtml(exercise.category)}</span></td>
-        <td>${escapeHtml(exercise.muscleGroup)}</td>
-        <td>${escapeHtml(exercise.equipment)}</td>
-        <td><span class="badge ${escapeHtml(exercise.scope)}">${escapeHtml(exercise.scope)}</span></td>
-        <td><button class="row-button" type="button" data-exercise-id="${escapeHtml(exercise.id)}">Add</button></td>
-    `;
-    return row;
+function buildRow(ex) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td class="font-medium text-white/90">${esc(ex.name)}</td>
+    <td><span class="badge badge-${esc(ex.category)}">${esc(ex.category)}</span></td>
+    <td>${esc(ex.muscleGroup)}</td>
+    <td>${esc(ex.equipment)}</td>
+    <td><span class="badge badge-${esc(ex.scope)}">${esc(ex.scope)}</span></td>
+    <td><button class="btn-add" data-id="${esc(ex.id)}">+ Add</button></td>
+  `;
+  return tr;
 }
 
-function renderSession(message) {
-    const session = state.activeSession;
-    sessionIdLabel.textContent = session ? session.id : "-";
-    sessionStatusLabel.textContent = session ? "Active" : "Idle";
-    previewStatus.textContent = session ? "Live" : "Idle";
-    previewSessionName.textContent = session ? `Session #${session.id}` : "Push Session";
-    previewExerciseCount.textContent = session ? session.exercises.length : 0;
-    sessionMessage.textContent = message || (session ? `${session.exercises.length} exercise dipilih.` : "Belum ada sesi aktif.");
+function renderSession(msg) {
+  const s = state.activeSession;
 
-    selectedExerciseList.innerHTML = "";
-    const exercises = session ? session.exercises : [];
-    for (const exercise of exercises) {
-        const item = document.createElement("li");
-        item.innerHTML = `
-            <span>${escapeHtml(exercise.orderIndex)}. ${escapeHtml(exercise.exerciseNameSnapshot)}</span>
-            <small>${escapeHtml(exercise.sets.length)} set</small>
-        `;
-        selectedExerciseList.append(item);
-    }
+  sessionIdLabel.textContent = s ? s.id : "-";
+  sessionStatus.textContent  = s ? (s.paused ? "Paused" : "Active") : "Idle";
+  sessionMsg.textContent     = msg || (s ? `${s.exercises.length} exercise dipilih.` : "Belum ada sesi aktif.");
 
-    finishSessionButton.disabled = !session;
-    cancelSessionButton.disabled = !session;
+  exerciseList.innerHTML = "";
+  (s?.exercises ?? []).forEach((ex) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${esc(ex.orderIndex)}. ${esc(ex.exerciseNameSnapshot)}</span><small>${esc(ex.sets.length)} set</small>`;
+    exerciseList.append(li);
+  });
+
+  finishBtn.disabled = !s;
+  cancelBtn.disabled = !s;
 }
 
-function escapeHtml(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+// helper
+
+async function postJson(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+  return data;
 }
 
-searchInput.addEventListener("input", (event) => {
-    state.search = event.target.value;
-    render();
+function esc(v) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+searchInput.addEventListener("input", (e) => { state.search = e.target.value; render(); });
+
+userIdInput.addEventListener("change", async (e) => {
+  const n = Number(e.target.value);
+  state.userId = Number.isFinite(n) && n > 0 ? n : 1;
+  userIdInput.value = state.userId;
+  await loadExercises();
+  await loadActiveSession();
 });
 
-userIdInput.addEventListener("change", async (event) => {
-    const nextUserId = Number(event.target.value);
-    state.userId = Number.isFinite(nextUserId) && nextUserId > 0 ? nextUserId : 1;
-    userIdInput.value = state.userId;
-    await loadExercises();
-    await loadActiveSession();
-});
-
-tableBody.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-exercise-id]");
-    if (!button) {
-        return;
-    }
-    addExercise(Number(button.dataset.exerciseId));
+tableBody.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-id]");
+  if (btn) addExercise(Number(btn.dataset.id));
 });
 
 refreshButton.addEventListener("click", async () => {
-    await loadExercises();
-    await loadActiveSession();
+  await loadExercises();
+  await loadActiveSession();
 });
-startSessionButton.addEventListener("click", startSession);
-heroStartButton.addEventListener("click", startSession);
-finishSessionButton.addEventListener("click", finishSession);
-cancelSessionButton.addEventListener("click", cancelSession);
+
+startBtn.addEventListener("click", startSession);
+finishBtn.addEventListener("click", finishSession);
+cancelBtn.addEventListener("click", cancelSession);
+
 
 loadExercises();
 loadActiveSession();

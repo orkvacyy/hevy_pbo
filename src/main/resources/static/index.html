@@ -1,160 +1,172 @@
 <!doctype html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hevy PBO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
-<main class="app-shell">
-    <nav class="site-nav" aria-label="Navigasi utama">
-        <a class="brand" href="/" aria-label="Hevy PBO home">
-            <span class="brand-mark">H</span>
-            <span>Hevy PBO</span>
-        </a>
-        <div class="nav-actions">
-            <a href="#library">Library</a>
-            <a href="#session">Workout</a>
-            <button id="refreshButton" class="ghost-button" type="button" title="Refresh daftar exercise">Refresh</button>
+<body class="bg-[#0f0f0f] text-white min-h-screen">
+
+<!-- sidebar -->
+<aside class="sidebar fixed top-0 left-0 h-full w-64 bg-[#141414] border-r border-white/5 flex flex-col z-50">
+    <div class="p-6 border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#e63946] flex items-center justify-center font-bold text-sm" style="font-family: 'Syne', sans-serif;">H</div>
+            <span class="font-bold text-base tracking-tight" style="font-family: 'Syne', sans-serif;">Hevy PBO</span>
         </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1">
+        <a href="#library" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <!-- dumbbell icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
+            Library
+        </a>
+        <a href="#session" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <!-- activity icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Workout
+        </a>
+        <a href="#history" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <!-- clock icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            History
+        </a>
     </nav>
 
-    <section class="hero" aria-label="Workout logger">
-        <div class="hero-copy">
-            <p class="eyebrow">Workout Tracker</p>
-            <h1>Log Workouts. Get Stronger.</h1>
-            <p class="hero-text">Build your session, choose exercises, and keep every set connected to your workout history.</p>
-            <div class="hero-actions">
-                <button id="heroStartButton" type="button">Start Workout</button>
-                <a class="text-link" href="#library">Open Library</a>
+    <!-- inputan user id -->
+    <div class="p-4 border-t border-white/5">
+        <p class="text-xs text-white/30 mb-2 uppercase tracking-widest">User ID</p>
+        <input id="userIdInput" type="number" min="1" value="1"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+    </div>
+</aside>
+
+<!-- Main content -->
+<main class="ml-64 min-h-screen flex flex-col">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-40 bg-[#0f0f0f]/80 backdrop-blur border-b border-white/5 px-8 py-4 flex items-center justify-between">
+        <div>
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Dashboard</p>
+            <h1 class="text-lg font-bold tracking-tight" style="font-family: 'Syne', sans-serif;">Exercise Library</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input id="searchInput" type="search" placeholder="Cari exercise..."
+                       class="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#e63946]/60 w-56 transition-colors">
             </div>
-            <div class="rating-strip" aria-label="Ringkasan aplikasi">
-                <span>4.9 style rating</span>
-                <span>Fast logging</span>
-                <span>Progress ready</span>
+            <button id="refreshButton" class="btn-ghost px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.96"/></svg>
+                Refresh
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats row -->
+    <section class="px-8 pt-6 grid grid-cols-3 gap-4">
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total Exercise</p>
+            <p id="totalCount" class="text-3xl font-bold" style="font-family: 'Syne', sans-serif;">0</p>
+        </div>
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Strength</p>
+            <p id="strengthCount" class="text-3xl font-bold text-[#e63946]" style="font-family: 'Syne', sans-serif;">0</p>
+        </div>
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Cardio</p>
+            <p id="cardioCount" class="text-3xl font-bold text-[#4cc9f0]" style="font-family: 'Syne', sans-serif;">0</p>
+        </div>
+    </section>
+
+    <!-- Workspace -->
+    <section class="px-8 pt-6 pb-8 flex gap-5 flex-1" id="library">
+
+        <!-- Exercise table -->
+        <div class="flex-1 min-w-0">
+            <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
+                <div id="statusMessage" class="px-5 py-3 text-xs text-white/30 border-b border-white/5">Memuat library...</div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                        <tr class="border-b border-white/5">
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Nama</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Kategori</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Muscle</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Equipment</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Scope</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody id="exerciseTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="phone-stage" aria-hidden="true">
-            <div class="phone-card">
-                <div class="phone-top">
-                    <span></span>
-                    <strong>Today</strong>
-                    <small id="previewStatus">Idle</small>
+        <!-- Session panel -->
+        <aside id="session" class="w-72 shrink-0">
+            <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden sticky top-24">
+
+                <!-- Panel header -->
+                <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Session</p>
+                        <h2 class="text-base font-bold" style="font-family: 'Syne', sans-serif;">Sesi Aktif</h2>
+                    </div>
+                    <button id="startSessionButton" class="btn-primary px-4 py-2 rounded-lg text-xs font-semibold transition-all">
+                        Start
+                    </button>
                 </div>
-                <div class="phone-workout">
-                    <p>Workout</p>
-                    <h2 id="previewSessionName">Push Session</h2>
-                    <div class="phone-progress">
-                        <span></span>
+
+                <!-- Session meta -->
+                <div class="grid grid-cols-2 border-b border-white/5">
+                    <div class="px-5 py-4 border-r border-white/5">
+                        <p id="sessionIdLabel" class="text-xl font-bold" style="font-family: 'Syne', sans-serif;">-</p>
+                        <p class="text-xs text-white/30 mt-0.5">Session ID</p>
+                    </div>
+                    <div class="px-5 py-4">
+                        <p id="sessionStatusLabel" class="text-xl font-bold" style="font-family: 'Syne', sans-serif;">Idle</p>
+                        <p class="text-xs text-white/30 mt-0.5">Status</p>
                     </div>
                 </div>
-                <div class="phone-row">
-                    <span>Exercises</span>
-                    <strong id="previewExerciseCount">0</strong>
+
+                <!-- Session message -->
+                <div id="sessionMessage" class="px-5 py-3 text-xs text-white/40 border-b border-white/5">
+                    Belum ada sesi aktif.
                 </div>
-                <div class="phone-row">
-                    <span>Library</span>
-                    <strong id="previewLibraryCount">0</strong>
+
+                <!-- Selected exercises -->
+                <ul id="selectedExerciseList" class="divide-y divide-white/5 max-h-48 overflow-y-auto"></ul>
+
+                <!-- Notes -->
+                <div class="px-5 py-4 border-t border-white/5">
+                    <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Notes</p>
+                    <textarea id="notesInput" rows="3" placeholder="Push day..."
+                              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 resize-none transition-colors"></textarea>
                 </div>
-                <div class="phone-set">
-                    <span>Bench Press</span>
-                    <small>3 x 10</small>
+
+                <!-- Actions -->
+                <div class="px-5 pb-5 grid grid-cols-2 gap-2">
+                    <button id="finishSessionButton" disabled class="btn-primary py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        Finish
+                    </button>
+                    <button id="cancelSessionButton" disabled class="btn-ghost py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        Cancel
+                    </button>
                 </div>
-                <div class="phone-set">
-                    <span>Lat Pulldown</span>
-                    <small>4 x 8</small>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="summary-strip" aria-label="Ringkasan exercise">
-        <div>
-            <span id="totalCount">0</span>
-            <p>Total</p>
-        </div>
-        <div>
-            <span id="strengthCount">0</span>
-            <p>Strength</p>
-        </div>
-        <div>
-            <span id="cardioCount">0</span>
-            <p>Cardio</p>
-        </div>
-    </section>
-
-    <section class="toolbar" aria-label="Kontrol library">
-        <div>
-            <p class="eyebrow">Library</p>
-            <h2>Exercise Library</h2>
-        </div>
-        <div class="toolbar-actions">
-            <label class="search-field user-field">
-                <span>User ID</span>
-                <input id="userIdInput" type="number" min="1" value="1">
-            </label>
-            <label class="search-field">
-                <span>Search</span>
-                <input id="searchInput" type="search" placeholder="Bench press">
-            </label>
-        </div>
-    </section>
-
-    <section class="workspace-grid">
-        <section class="table-shell library-panel">
-            <div id="statusMessage" class="status">Memuat library...</div>
-            <table id="library" aria-label="Daftar library exercise">
-                <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Kategori</th>
-                    <th>Muscle</th>
-                    <th>Equipment</th>
-                    <th>Scope</th>
-                    <th>Aksi</th>
-                </tr>
-                </thead>
-                <tbody id="exerciseTableBody"></tbody>
-            </table>
-        </section>
-
-        <aside id="session" class="workout-panel" aria-label="Sesi workout">
-            <div class="panel-header">
-                <div>
-                    <p class="eyebrow">Session</p>
-                    <h2>Sesi Aktif</h2>
-                </div>
-                <button id="startSessionButton" type="button">Start</button>
-            </div>
-
-            <div class="session-meta">
-                <div>
-                    <span id="sessionIdLabel">-</span>
-                    <p>Session ID</p>
-                </div>
-                <div>
-                    <span id="sessionStatusLabel">Idle</span>
-                    <p>Status</p>
-                </div>
-            </div>
-
-            <div id="sessionMessage" class="status compact">Belum ada sesi aktif.</div>
-            <ul id="selectedExerciseList" class="selected-list"></ul>
-
-            <label class="notes-field">
-                <span>Notes</span>
-                <textarea id="notesInput" rows="4" placeholder="Push day"></textarea>
-            </label>
-
-            <div class="session-actions">
-                <button id="finishSessionButton" type="button">Finish</button>
-                <button id="cancelSessionButton" class="secondary-button" type="button">Cancel</button>
             </div>
         </aside>
     </section>
+
 </main>
+
 <script src="/app.js"></script>
 </body>
 </html>
