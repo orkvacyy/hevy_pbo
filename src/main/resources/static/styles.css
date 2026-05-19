@@ -98,3 +98,14 @@ body {
   .sidebar { display: none; }
   main { margin-left: 0 !important; }
 }
+
+/* Tombol tambah set di dalam exercise item */
+.btn-add-set {
+  background: rgba(230,57,70,0.1);
+  color: #e63946;
+  border: 1px solid rgba(230,57,70,0.2);
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 4px 8px;
+}
+.btn-add-set:hover { background: #e63946; color: #fff; border-color: #e63946; }

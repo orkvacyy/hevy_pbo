@@ -5,7 +5,6 @@ const state = {
   activeSession: null,
 };
 
-// DOM refs
 const $ = (id) => document.getElementById(id);
 const tableBody      = $("exerciseTableBody");
 const statusMsg      = $("statusMessage");
@@ -73,6 +72,30 @@ async function addExercise(exerciseId) {
   } catch (e) { renderSession(e.message); }
 }
 
+async function addSet(workoutExerciseId, weightKg, reps) {
+  try {
+    await postJson(`/api/workouts/exercises/${workoutExerciseId}/sets`, {
+      userId: state.userId,
+      weightKg,
+      reps,
+    });
+    await loadActiveSession();
+    renderSession("Set ditambahkan.");
+  } catch (e) { renderSession(e.message); }
+}
+
+async function deleteSet(setId) {
+  try {
+    const res = await fetch(
+      `/api/workouts/exercises/sets/${setId}?userId=${state.userId}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await loadActiveSession();
+    renderSession("Set dihapus.");
+  } catch (e) { renderSession(e.message); }
+}
+
 async function finishSession() {
   if (!state.activeSession) return;
   try {
@@ -103,6 +126,7 @@ async function cancelSession() {
   } catch (e) { renderSession(e.message); }
 }
 
+// ─── Render ───────────────────────────────────────────────────────────────────
 
 function render() {
   const keyword = state.search.toLowerCase();
@@ -146,13 +170,44 @@ function renderSession(msg) {
 
   exerciseList.innerHTML = "";
   (s?.exercises ?? []).forEach((ex) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${esc(ex.orderIndex)}. ${esc(ex.exerciseNameSnapshot)}</span><small>${esc(ex.sets.length)} set</small>`;
-    exerciseList.append(li);
+    exerciseList.append(buildExerciseItem(ex));
   });
 
   finishBtn.disabled = !s;
   cancelBtn.disabled = !s;
+}
+
+function buildExerciseItem(ex) {
+  const li = document.createElement("li");
+  li.className = "px-5 py-3";
+  li.innerHTML = `
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm font-semibold text-white/90">${esc(ex.orderIndex)}. ${esc(ex.exerciseNameSnapshot)}</span>
+      <span class="text-xs text-white/30">${esc(ex.sets.length)} set</span>
+    </div>
+
+    <!-- Daftar set yang sudah ada -->
+    <ul class="space-y-1 mb-2">
+      ${ex.sets.map((set) => `
+        <li class="flex items-center justify-between text-xs text-white/50 bg-white/5 rounded px-2 py-1">
+          <span>Set ${esc(set.setNumber)}: ${esc(set.weightKg)} kg × ${esc(set.reps)} reps</span>
+          <button class="text-red-400/60 hover:text-red-400 transition-colors" data-delete-set="${esc(set.id)}">✕</button>
+        </li>
+      `).join("")}
+    </ul>
+
+    <!-- Form tambah set -->
+    <div class="flex gap-1.5 items-center">
+      <input type="number" placeholder="kg" min="0" step="0.5"
+        class="set-weight w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60"
+        data-we-id="${esc(ex.id)}">
+      <input type="number" placeholder="reps" min="1"
+        class="set-reps w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60"
+        data-we-id="${esc(ex.id)}">
+      <button class="btn-add-set flex-1 text-xs py-1 rounded" data-we-id="${esc(ex.id)}">+ Set</button>
+    </div>
+  `;
+  return li;
 }
 
 // helper
@@ -182,6 +237,29 @@ searchInput.addEventListener("input", (e) => { state.search = e.target.value; re
 tableBody.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-id]");
   if (btn) addExercise(Number(btn.dataset.id));
+});
+
+// event tombol session panel
+exerciseList.addEventListener("click", (e) => {
+  //hapus set
+  const deleteBtn = e.target.closest("[data-delete-set]");
+  if (deleteBtn) { deleteSet(Number(deleteBtn.dataset.deleteSet)); return; }
+
+  // add set
+  const addSetBtn = e.target.closest("[data-we-id].btn-add-set");
+  if (!addSetBtn) return;
+
+  const weId     = Number(addSetBtn.dataset.weId);
+  const weightEl = exerciseList.querySelector(`.set-weight[data-we-id="${weId}"]`);
+  const repsEl   = exerciseList.querySelector(`.set-reps[data-we-id="${weId}"]`);
+
+  const weightKg = parseFloat(weightEl?.value ?? 0);
+  const reps     = parseInt(repsEl?.value ?? 0);
+
+  if (!reps || reps < 1) { renderSession("Reps wajib diisi."); return; }
+  if (weightKg < 0)      { renderSession("Berat tidak boleh negatif."); return; }
+
+  addSet(weId, weightKg, reps);
 });
 
 refreshButton.addEventListener("click", async () => {
