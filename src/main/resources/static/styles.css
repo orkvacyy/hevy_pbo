@@ -1,0 +1,111 @@
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Nav items */
+.nav-item { color: rgba(255,255,255,0.4); }
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+.nav-item.active { background: rgba(230,57,70,0.12); color: #e63946; }
+
+/* Stat cards */
+.stat-card { background: #141414; }
+
+/* Buttons */
+.btn-primary {
+  background: #e63946;
+  color: #fff;
+}
+.btn-primary:hover { background: #c1121f; }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+/* Table rows */
+#exerciseTableBody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+#exerciseTableBody tr:last-child { border-bottom: none; }
+#exerciseTableBody tr:hover { background: rgba(255,255,255,0.03); }
+
+#exerciseTableBody td {
+  padding: 14px 20px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  vertical-align: middle;
+}
+
+/* Category badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.badge-strength { background: rgba(230,57,70,0.15); color: #e63946; }
+.badge-cardio   { background: rgba(76,201,240,0.12); color: #4cc9f0; }
+.badge-global   { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+.badge-local    { background: rgba(248,200,72,0.12); color: #f8c848; }
+
+/* Add button */
+.btn-add {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(230,57,70,0.12);
+  color: #e63946;
+  border: 1px solid rgba(230,57,70,0.2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-add:hover { background: #e63946; color: #fff; border-color: #e63946; }
+
+/* Selected exercise list */
+#selectedExerciseList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  font-size: 12px;
+}
+#selectedExerciseList li span { color: rgba(255,255,255,0.8); font-weight: 500; }
+#selectedExerciseList li small { color: rgba(255,255,255,0.3); }
+
+/* Sidebar mobile hide */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  main { margin-left: 0 !important; }
+}
+
+/* Tombol tambah set di dalam exercise item */
+.btn-add-set {
+  background: rgba(230,57,70,0.1);
+  color: #e63946;
+  border: 1px solid rgba(230,57,70,0.2);
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 4px 8px;
+}
+.btn-add-set:hover { background: #e63946; color: #fff; border-color: #e63946; }
