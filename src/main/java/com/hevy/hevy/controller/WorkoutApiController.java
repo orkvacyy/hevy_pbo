@@ -58,6 +58,35 @@ public class WorkoutApiController {
         return toSessionResponse(workoutService.finishSession(request.userId(), sessionId, request.notes()));
     }
 
+    @PostMapping("/exercises/{workoutExerciseId}/sets")
+    public ResponseEntity<Map<String, Object>> addSet(
+            @PathVariable Long workoutExerciseId,
+            @RequestBody AddSetRequest request) {
+
+        WorkoutService workoutService = new WorkoutService();
+        WorkoutSet set = workoutService.addSet(request.userId(), workoutExerciseId, request.weightKg(), request.reps());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "id",                 set.getId(),
+                "workoutExerciseId",  set.getWorkoutExerciseId(),
+                "setNumber",          set.getSetNumber(),
+                "weightKg",           set.getWeightKg(),
+                "reps",               set.getReps()
+        ));
+    }
+
+    @DeleteMapping("/exercises/sets/{setId}")
+    public ResponseEntity<Void> deleteSet(
+            @PathVariable Long setId,
+            @RequestParam Long userId) {
+
+        WorkoutService workoutService = new WorkoutService();
+        workoutService.deleteSet(userId, setId);
+        return ResponseEntity.noContent().build();
+    }
+
+    public record AddSetRequest(Long userId, double weightKg, int reps) {}
+
     @DeleteMapping("/{sessionId}")
     public ResponseEntity<Void> cancel(@PathVariable Long sessionId, @RequestParam Long userId) {
         WorkoutService workoutService = new WorkoutService();

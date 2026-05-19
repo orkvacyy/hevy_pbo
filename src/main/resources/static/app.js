@@ -1,28 +1,27 @@
 const state = {
   exercises: [],
   search: "",
-  userId: 1,
+  userId: Number(document.getElementById("userIdInput").value) || 1,
   activeSession: null,
 };
 
 // DOM refs
 const $ = (id) => document.getElementById(id);
-const tableBody       = $("exerciseTableBody");
-const statusMsg       = $("statusMessage");
-const searchInput     = $("searchInput");
-const userIdInput     = $("userIdInput");
-const refreshButton   = $("refreshButton");
-const totalCount      = $("totalCount");
-const strengthCount   = $("strengthCount");
-const cardioCount     = $("cardioCount");
-const startBtn        = $("startSessionButton");
-const finishBtn       = $("finishSessionButton");
-const cancelBtn       = $("cancelSessionButton");
-const sessionIdLabel  = $("sessionIdLabel");
-const sessionStatus   = $("sessionStatusLabel");
-const sessionMsg      = $("sessionMessage");
-const exerciseList    = $("selectedExerciseList");
-const notesInput      = $("notesInput");
+const tableBody      = $("exerciseTableBody");
+const statusMsg      = $("statusMessage");
+const searchInput    = $("searchInput");
+const refreshButton  = $("refreshButton");
+const totalCount     = $("totalCount");
+const strengthCount  = $("strengthCount");
+const cardioCount    = $("cardioCount");
+const startBtn       = $("startSessionButton");
+const finishBtn      = $("finishSessionButton");
+const cancelBtn      = $("cancelSessionButton");
+const sessionIdLabel = $("sessionIdLabel");
+const sessionStatus  = $("sessionStatusLabel");
+const sessionMsg     = $("sessionMessage");
+const exerciseList   = $("selectedExerciseList");
+const notesInput     = $("notesInput");
 
 // data fetch
 
@@ -53,7 +52,7 @@ async function loadActiveSession() {
   }
 }
 
-//session
+// session
 
 async function startSession() {
   try {
@@ -104,7 +103,6 @@ async function cancelSession() {
   } catch (e) { renderSession(e.message); }
 }
 
-// ─── Rendering ────────────────────────────────────────────────────────────────
 
 function render() {
   const keyword = state.search.toLowerCase();
@@ -120,8 +118,7 @@ function render() {
   totalCount.textContent    = state.exercises.length;
   strengthCount.textContent = state.exercises.filter((e) => e.category === "strength").length;
   cardioCount.textContent   = state.exercises.filter((e) => e.category === "cardio").length;
-
-  statusMsg.textContent = filtered.length === 0
+  statusMsg.textContent     = filtered.length === 0
     ? "Tidak ada exercise yang cocok."
     : `${filtered.length} exercise ditampilkan.`;
 
@@ -143,7 +140,6 @@ function buildRow(ex) {
 
 function renderSession(msg) {
   const s = state.activeSession;
-
   sessionIdLabel.textContent = s ? s.id : "-";
   sessionStatus.textContent  = s ? (s.paused ? "Paused" : "Active") : "Idle";
   sessionMsg.textContent     = msg || (s ? `${s.exercises.length} exercise dipilih.` : "Belum ada sesi aktif.");
@@ -182,14 +178,6 @@ function esc(v) {
 
 
 searchInput.addEventListener("input", (e) => { state.search = e.target.value; render(); });
-
-userIdInput.addEventListener("change", async (e) => {
-  const n = Number(e.target.value);
-  state.userId = Number.isFinite(n) && n > 0 ? n : 1;
-  userIdInput.value = state.userId;
-  await loadExercises();
-  await loadActiveSession();
-});
 
 tableBody.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-id]");

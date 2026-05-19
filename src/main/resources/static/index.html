@@ -15,24 +15,21 @@
 <aside class="sidebar fixed top-0 left-0 h-full w-64 bg-[#141414] border-r border-white/5 flex flex-col z-50">
     <div class="p-6 border-b border-white/5">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-[#e63946] flex items-center justify-center font-bold text-sm" style="font-family: 'Syne', sans-serif;">H</div>
-            <span class="font-bold text-base tracking-tight" style="font-family: 'Syne', sans-serif;">Hevy PBO</span>
+            <div class="w-8 h-8 rounded-lg bg-[#e63946] flex items-center justify-center font-bold text-sm" style="font-family:'Syne',sans-serif;">H</div>
+            <span class="font-bold text-base tracking-tight" style="font-family:'Syne',sans-serif;">Hevy PBO</span>
         </div>
     </div>
 
     <nav class="flex-1 p-4 space-y-1">
         <a href="#library" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <!-- dumbbell icon -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
             Library
         </a>
         <a href="#session" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <!-- activity icon -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Workout
         </a>
         <a href="#history" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <!-- clock icon -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             History
         </a>
@@ -40,20 +37,23 @@
 
     <!-- inputan user id -->
     <div class="p-4 border-t border-white/5">
-        <p class="text-xs text-white/30 mb-2 uppercase tracking-widest">User ID</p>
-        <input id="userIdInput" type="number" min="1" value="1"
-               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+        <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Logged in as</p>
+        <p id="usernameLabel" class="text-sm font-semibold text-white/80">-</p>
+        <button onclick="handleLogout()" class="mt-3 w-full btn-ghost py-2 rounded-lg text-xs font-semibold">
+            Logout
+        </button>
+        <input id="userIdInput" type="hidden" value="1">
     </div>
 </aside>
 
-<!-- Main content -->
+<!-- Main -->
 <main class="ml-64 min-h-screen flex flex-col">
 
     <!-- Top bar -->
     <header class="sticky top-0 z-40 bg-[#0f0f0f]/80 backdrop-blur border-b border-white/5 px-8 py-4 flex items-center justify-between">
         <div>
             <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Dashboard</p>
-            <h1 class="text-lg font-bold tracking-tight" style="font-family: 'Syne', sans-serif;">Exercise Library</h1>
+            <h1 class="text-lg font-bold tracking-tight" style="font-family:'Syne',sans-serif;">Exercise Library</h1>
         </div>
         <div class="flex items-center gap-3">
             <div class="relative">
@@ -68,19 +68,19 @@
         </div>
     </header>
 
-    <!-- Stats row -->
+    <!-- Stats -->
     <section class="px-8 pt-6 grid grid-cols-3 gap-4">
         <div class="stat-card rounded-xl p-5 border border-white/5">
             <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total Exercise</p>
-            <p id="totalCount" class="text-3xl font-bold" style="font-family: 'Syne', sans-serif;">0</p>
+            <p id="totalCount" class="text-3xl font-bold" style="font-family:'Syne',sans-serif;">0</p>
         </div>
         <div class="stat-card rounded-xl p-5 border border-white/5">
             <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Strength</p>
-            <p id="strengthCount" class="text-3xl font-bold text-[#e63946]" style="font-family: 'Syne', sans-serif;">0</p>
+            <p id="strengthCount" class="text-3xl font-bold text-[#e63946]" style="font-family:'Syne',sans-serif;">0</p>
         </div>
         <div class="stat-card rounded-xl p-5 border border-white/5">
             <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Cardio</p>
-            <p id="cardioCount" class="text-3xl font-bold text-[#4cc9f0]" style="font-family: 'Syne', sans-serif;">0</p>
+            <p id="cardioCount" class="text-3xl font-bold text-[#4cc9f0]" style="font-family:'Syne',sans-serif;">0</p>
         </div>
     </section>
 
@@ -113,50 +113,46 @@
         <aside id="session" class="w-72 shrink-0">
             <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden sticky top-24">
 
-                <!-- Panel header -->
                 <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Session</p>
-                        <h2 class="text-base font-bold" style="font-family: 'Syne', sans-serif;">Sesi Aktif</h2>
+                        <h2 class="text-base font-bold" style="font-family:'Syne',sans-serif;">Sesi Aktif</h2>
                     </div>
                     <button id="startSessionButton" class="btn-primary px-4 py-2 rounded-lg text-xs font-semibold transition-all">
                         Start
                     </button>
                 </div>
 
-                <!-- Session meta -->
                 <div class="grid grid-cols-2 border-b border-white/5">
                     <div class="px-5 py-4 border-r border-white/5">
-                        <p id="sessionIdLabel" class="text-xl font-bold" style="font-family: 'Syne', sans-serif;">-</p>
+                        <p id="sessionIdLabel" class="text-xl font-bold" style="font-family:'Syne',sans-serif;">-</p>
                         <p class="text-xs text-white/30 mt-0.5">Session ID</p>
                     </div>
                     <div class="px-5 py-4">
-                        <p id="sessionStatusLabel" class="text-xl font-bold" style="font-family: 'Syne', sans-serif;">Idle</p>
+                        <p id="sessionStatusLabel" class="text-xl font-bold" style="font-family:'Syne',sans-serif;">Idle</p>
                         <p class="text-xs text-white/30 mt-0.5">Status</p>
                     </div>
                 </div>
 
-                <!-- Session message -->
                 <div id="sessionMessage" class="px-5 py-3 text-xs text-white/40 border-b border-white/5">
                     Belum ada sesi aktif.
                 </div>
 
-                <!-- Selected exercises -->
                 <ul id="selectedExerciseList" class="divide-y divide-white/5 max-h-48 overflow-y-auto"></ul>
 
-                <!-- Notes -->
                 <div class="px-5 py-4 border-t border-white/5">
                     <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Notes</p>
                     <textarea id="notesInput" rows="3" placeholder="Push day..."
                               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 resize-none transition-colors"></textarea>
                 </div>
 
-                <!-- Actions -->
                 <div class="px-5 pb-5 grid grid-cols-2 gap-2">
-                    <button id="finishSessionButton" disabled class="btn-primary py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    <button id="finishSessionButton" disabled
+                            class="btn-primary py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                         Finish
                     </button>
-                    <button id="cancelSessionButton" disabled class="btn-ghost py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    <button id="cancelSessionButton" disabled
+                            class="btn-ghost py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                         Cancel
                     </button>
                 </div>
@@ -167,6 +163,26 @@
 
 </main>
 
-<script src="/app.js"></script>
+<script>
+    async function handleLogout() {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login.html";
+    }
+
+    // Guard: cek session, load app.js hanya setelah userId siap
+    (async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) { window.location.href = "/login.html"; return; }
+
+      const user = await res.json();
+      document.getElementById("userIdInput").value = user.id;
+      document.getElementById("usernameLabel").textContent = user.username;
+
+      const script = document.createElement("script");
+      script.src = "/app.js";
+      document.body.appendChild(script);
+    })();
+</script>
+
 </body>
 </html>

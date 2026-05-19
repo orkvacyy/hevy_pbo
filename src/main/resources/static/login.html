@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hevy PBO — Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; }
+        .btn-primary { background: #e63946; color: #fff; transition: background 0.15s; }
+        .btn-primary:hover { background: #c1121f; }
+        .input-field {
+          width: 100%;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px;
+          padding: 10px 14px;
+          color: #fff;
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .input-field:focus { border-color: rgba(230,57,70,0.6); }
+        .input-field::placeholder { color: rgba(255,255,255,0.25); }
+        .tab-active { color: #fff; border-bottom: 2px solid #e63946; }
+        .tab-inactive { color: rgba(255,255,255,0.35); border-bottom: 2px solid transparent; }
+        .error-msg { color: #e63946; font-size: 12px; min-height: 18px; }
+    </style>
+</head>
+<body class="bg-[#0f0f0f] text-white min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-sm px-4">
+
+    <!-- Logo -->
+    <div class="flex items-center gap-3 justify-center mb-8">
+        <div class="w-9 h-9 rounded-xl bg-[#e63946] flex items-center justify-center font-bold"
+             style="font-family:'Syne',sans-serif;">H</div>
+        <span class="text-xl font-bold tracking-tight" style="font-family:'Syne',sans-serif;">Hevy PBO</span>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-[#141414] border border-white/5 rounded-2xl overflow-hidden">
+
+        <!-- Tabs -->
+        <div class="flex border-b border-white/5">
+            <button id="tabLogin" onclick="switchTab('login')"
+                    class="flex-1 py-4 text-sm font-semibold tab-active transition-all">
+                Login
+            </button>
+            <button id="tabRegister" onclick="switchTab('register')"
+                    class="flex-1 py-4 text-sm font-semibold tab-inactive transition-all">
+                Register
+            </button>
+        </div>
+
+        <!-- Login form -->
+        <div id="formLogin" class="p-6 space-y-4">
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Email</label>
+                <input id="loginEmail" type="email" placeholder="kamu@email.com" class="input-field">
+            </div>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Password</label>
+                <input id="loginPassword" type="password" placeholder="••••••••" class="input-field">
+            </div>
+            <p id="loginError" class="error-msg"></p>
+            <button onclick="handleLogin()"
+                    class="btn-primary w-full py-3 rounded-xl text-sm font-semibold mt-2">
+                Masuk
+            </button>
+        </div>
+
+        <!-- Register form -->
+        <div id="formRegister" class="p-6 space-y-4 hidden">
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Username</label>
+                <input id="regUsername" type="text" placeholder="username" class="input-field">
+            </div>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Email</label>
+                <input id="regEmail" type="email" placeholder="kamu@email.com" class="input-field">
+            </div>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Password</label>
+                <input id="regPassword" type="password" placeholder="••••••••" class="input-field">
+            </div>
+            <p id="registerError" class="error-msg"></p>
+            <button onclick="handleRegister()"
+                    class="btn-primary w-full py-3 rounded-xl text-sm font-semibold mt-2">
+                Daftar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // redirect ke dashboard kalau sudah login
+    async function checkSession() {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) window.location.href = "/";
+    }
+    checkSession();
+
+    function switchTab(tab) {
+      const isLogin = tab === "login";
+      document.getElementById("formLogin").classList.toggle("hidden", !isLogin);
+      document.getElementById("formRegister").classList.toggle("hidden", isLogin);
+      document.getElementById("tabLogin").className    = `flex-1 py-4 text-sm font-semibold transition-all ${isLogin ? "tab-active" : "tab-inactive"}`;
+      document.getElementById("tabRegister").className = `flex-1 py-4 text-sm font-semibold transition-all ${!isLogin ? "tab-active" : "tab-inactive"}`;
+    }
+
+    async function handleLogin() {
+      const email    = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      const errEl    = document.getElementById("loginError");
+      errEl.textContent = "";
+
+      if (!email || !password) { errEl.textContent = "Email dan password wajib diisi."; return; }
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.message || "Login gagal."; return; }
+        window.location.href = "/";
+      } catch {
+        errEl.textContent = "Terjadi kesalahan, coba lagi.";
+      }
+    }
+
+    async function handleRegister() {
+      const username = document.getElementById("regUsername").value.trim();
+      const email    = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value;
+      const errEl    = document.getElementById("registerError");
+      errEl.textContent = "";
+
+      if (!username || !email || !password) { errEl.textContent = "Semua field wajib diisi."; return; }
+      if (password.length < 6) { errEl.textContent = "Password minimal 6 karakter."; return; }
+
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.message || "Registrasi gagal."; return; }
+        window.location.href = "/";
+      } catch {
+        errEl.textContent = "Terjadi kesalahan, coba lagi.";
+      }
+    }
+
+    // submit
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const loginHidden = document.getElementById("formLogin").classList.contains("hidden");
+      loginHidden ? handleRegister() : handleLogin();
+    });
+</script>
+</body>
+</html>

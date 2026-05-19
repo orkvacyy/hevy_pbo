@@ -4,11 +4,12 @@ import com.hevy.hevy.model.BaseExercise;
 import com.hevy.hevy.model.User;
 import com.hevy.hevy.model.WorkoutExercise;
 import com.hevy.hevy.model.WorkoutSession;
+import com.hevy.hevy.model.WorkoutSet;
 import com.hevy.hevy.repository.ExerciseDao;
 import com.hevy.hevy.repository.UserDao;
 import com.hevy.hevy.repository.WorkoutExerciseDao;
 import com.hevy.hevy.repository.WorkoutSessionDao;
-
+import com.hevy.hevy.repository.WorkoutSetDao;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,12 +19,14 @@ public class WorkoutService {
     private final UserDao userDao;
     private final WorkoutSessionDao sessionDao;
     private final WorkoutExerciseDao workoutExerciseDao;
+    private final WorkoutSetDao workoutSetDao;
 
     public WorkoutService() {
         this.exerciseDao = new ExerciseDao();
         this.userDao = new UserDao();
         this.sessionDao = new WorkoutSessionDao();
         this.workoutExerciseDao = new WorkoutExerciseDao();
+        this.workoutSetDao = new WorkoutSetDao();
     }
 
     public WorkoutSession startSession(Long userId) {
@@ -80,6 +83,35 @@ public class WorkoutService {
     public void cancelSession(Long userId, Long sessionId) {
         findOwnedSession(userId, sessionId);
         sessionDao.delete(sessionId);
+    }
+
+    public WorkoutSet addSet(Long userId, Long workoutExerciseId, double weightKg, int reps) {
+        validateActiveUser(userId);
+
+        // memastikan workout exercise ini milik user yang benar
+        WorkoutExercise we = workoutExerciseDao.findById(workoutExerciseId)
+                .orElseThrow(() -> new IllegalArgumentException("Workout exercise tidak ditemukan"));
+        findOwnedSession(userId, we.getSessionId());
+
+        // set number = jumlah set yang sudah ada + 1
+        List<WorkoutSet> existing = workoutSetDao.findByWorkoutExerciseId(workoutExerciseId);
+        int setNumber = existing.size() + 1;
+
+        WorkoutSet set = new WorkoutSet(workoutExerciseId, setNumber, weightKg, reps);
+        workoutSetDao.save(set);
+        return set;
+    }
+
+    public void deleteSet(Long userId, Long setId) {
+        validateActiveUser(userId);
+        WorkoutSet set = workoutSetDao.findById(setId)
+                .orElseThrow(() -> new IllegalArgumentException("Set tidak ditemukan"));
+
+        WorkoutExercise we = workoutExerciseDao.findById(set.getWorkoutExerciseId())
+                .orElseThrow(() -> new IllegalArgumentException("Workout exercise tidak ditemukan"));
+        findOwnedSession(userId, we.getSessionId());
+
+        workoutSetDao.delete(setId);
     }
 
     private WorkoutSession findOwnedSession(Long userId, Long sessionId) {
