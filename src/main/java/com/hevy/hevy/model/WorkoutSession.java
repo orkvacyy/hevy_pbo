@@ -4,33 +4,60 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkoutSession {
+public class WorkoutSession implements WorkoutAction {
 
     private Long id;
     private Long userId;
     private String notes;
     private LocalDateTime startedAt;
     private LocalDateTime finishedAt;
+    private boolean paused;
     private List<WorkoutExercise> exercises;
 
     // cons
     public WorkoutSession(Long userId) {
         this.userId    = userId;
         this.startedAt = LocalDateTime.now();
+        this.paused    = false;
         this.exercises = new ArrayList<>();
     }
 
+    @Override
     public void start() {
         this.startedAt = LocalDateTime.now();
+        this.finishedAt = null;
+        this.paused = false;
+    }
+
+    @Override
+    public void pause() {
+        if (!isActive()) {
+            throw new IllegalStateException("Sesi yang sudah selesai tidak bisa di-pause");
+        }
+        this.paused = true;
+    }
+
+    @Override
+    public void finish() {
+        finish(this.notes);
     }
 
     public void finish(String notes) {
         this.finishedAt = LocalDateTime.now();
         this.notes      = notes;
+        this.paused     = false;
     }
 
     public boolean isActive() {
         return this.finishedAt == null;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
     }
 
     public long getDurationMinutes() {
