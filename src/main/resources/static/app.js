@@ -29,6 +29,58 @@ async function loadExercises() {
   }
 }
 
+// custom exercise
+
+async function submitCustomExercise() {
+  const name      = $("exName").value.trim();
+  const category  = $("exCategory").value;
+  const muscle    = $("exMuscle").value;
+  const equipment = $("exEquipment").value;
+  const errEl     = $("modalError");
+
+  if (!name) { errEl.textContent = "Nama exercise wajib diisi."; return; }
+  errEl.textContent = "";
+
+  try {
+    const res = await fetch("/api/exercises", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        category,
+        muscleGroup: muscle,
+        equipment,
+        ownerId: state.userId,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.message || "Gagal menyimpan."; return; }
+
+    closeModal();
+    await loadExercises();
+  } catch {
+    errEl.textContent = "Terjadi kesalahan, coba lagi.";
+  }
+}
+
+async function deleteExercise(exerciseId) {
+  if (!confirm("Hapus exercise ini?")) return;
+  try {
+    const res = await fetch(`/api/exercises/${exerciseId}?userId=${state.userId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.message || "Gagal menghapus.");
+      return;
+    }
+    await loadExercises();
+  } catch {
+    alert("Terjadi kesalahan, coba lagi.");
+  }
+}
+
+// rend
 
 function render() {
   const keyword = state.search.toLowerCase();
@@ -50,6 +102,7 @@ function render() {
 }
 
 function buildRow(ex) {
+  const isLocal = ex.scope === "local";
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td class="font-medium text-white/90">${esc(ex.name)}</td>
@@ -57,6 +110,11 @@ function buildRow(ex) {
     <td>${esc(ex.muscleGroup)}</td>
     <td>${esc(ex.equipment)}</td>
     <td><span class="badge badge-${esc(ex.scope)}">${esc(ex.scope)}</span></td>
+    <td>
+      ${isLocal ? `
+        <button class="btn-delete text-xs px-3 py-1.5 rounded" data-del-id="${esc(ex.id)}">Hapus</button>
+      ` : `<span class="text-xs text-white/20">—</span>`}
+    </td>
   `;
   return tr;
 }
@@ -74,5 +132,16 @@ function esc(v) {
 searchInput.addEventListener("input", (e) => { state.search = e.target.value; render(); });
 refreshButton.addEventListener("click", loadExercises);
 
+tableBody.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-del-id]");
+  if (btn) deleteExercise(Number(btn.dataset.delId));
+});
+
+// submit w enter
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !document.getElementById("modal").classList.contains("hidden")) {
+    submitCustomExercise();
+  }
+});
 
 loadExercises();
