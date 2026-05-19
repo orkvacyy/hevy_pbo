@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hevy PBO — Workout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="bg-[#0f0f0f] text-white min-h-screen">
+
+<!-- Sidebar -->
+<aside class="sidebar fixed top-0 left-0 h-full w-64 bg-[#141414] border-r border-white/5 flex flex-col z-50">
+    <div class="p-6 border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#e63946] flex items-center justify-center font-bold text-sm" style="font-family:'Syne',sans-serif;">H</div>
+            <span class="font-bold text-base tracking-tight" style="font-family:'Syne',sans-serif;">Hevy PBO</span>
+        </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1">
+        <a href="/" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
+            Library
+        </a>
+        <a href="/workout.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Workout
+        </a>
+        <a href="/history.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            History
+        </a>
+    </nav>
+
+    <div class="p-4 border-t border-white/5">
+        <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Logged in as</p>
+        <p id="usernameLabel" class="text-sm font-semibold text-white/80">-</p>
+        <button onclick="handleLogout()" class="mt-3 w-full btn-ghost py-2 rounded-lg text-xs font-semibold">Logout</button>
+        <input id="userIdInput" type="hidden" value="1">
+    </div>
+</aside>
+
+<!-- Main -->
+<main class="ml-64 min-h-screen flex flex-col">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-40 bg-[#0f0f0f]/80 backdrop-blur border-b border-white/5 px-8 py-4 flex items-center justify-between">
+        <div>
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Workout</p>
+            <h1 class="text-lg font-bold tracking-tight" style="font-family:'Syne',sans-serif;">Sesi Latihan</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="sessionTimer" class="text-xs text-white/30 font-mono">00:00</span>
+            <button id="startBtn" class="btn-primary px-5 py-2 rounded-lg text-sm font-semibold">Start</button>
+            <button id="finishBtn" disabled class="btn-primary px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed">Finish</button>
+            <button id="cancelBtn" disabled class="btn-ghost px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed">Cancel</button>
+        </div>
+    </header>
+
+    <!-- workout kiri, library kanan -->
+    <section class="px-8 pt-6 pb-8 flex gap-6 flex-1 items-start">
+
+        <!-- Workout panel  -->
+        <div class="flex-1 min-w-0 space-y-4">
+
+            <!-- Status kosong -->
+            <div id="emptyState" class="bg-[#141414] border border-white/5 rounded-xl p-12 text-center">
+                <p class="text-white/20 text-sm">Belum ada sesi aktif.</p>
+                <p class="text-white/10 text-xs mt-1">Klik Start untuk mulai sesi baru.</p>
+            </div>
+
+            <!-- Exercise list -->
+            <div id="exercisePanel" class="hidden space-y-3">
+                <!-- Session info bar -->
+                <div class="bg-[#141414] border border-white/5 rounded-xl px-5 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-white/30">Session ID</p>
+                            <p id="sessionId" class="text-base font-bold" style="font-family:'Syne',sans-serif;">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-white/30">Status</p>
+                            <p id="sessionStatus" class="text-base font-bold text-green-400" style="font-family:'Syne',sans-serif;">Active</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-white/30">Durasi</p>
+                            <p id="sessionTimerPanel" class="text-base font-bold font-mono" style="font-family:'Syne',sans-serif;">00:00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar exercise dalam sesi -->
+                <div id="exerciseItems"></div>
+
+                <!-- Notes -->
+                <div class="bg-[#141414] border border-white/5 rounded-xl px-5 py-4">
+                    <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Notes</p>
+                    <textarea id="notesInput" rows="2" placeholder="Push day..."
+                              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 resize-none transition-colors"></textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Library panel -->
+        <aside class="w-80 shrink-0 sticky top-24 space-y-3">
+
+            <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Library</p>
+                        <h2 class="text-base font-bold" style="font-family:'Syne',sans-serif;">Pilih Exercise</h2>
+                    </div>
+                    <span id="libCount" class="text-xs text-white/30">0 exercise</span>
+                </div>
+
+                <!-- Search & filter -->
+                <div class="px-4 py-3 border-b border-white/5 space-y-2">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input id="libSearch" type="search" placeholder="Cari exercise..."
+                               class="w-full pl-8 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                    </div>
+                    <select id="libFilter" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                        <option value="">Semua Muscle</option>
+                        <option value="chest">Chest</option>
+                        <option value="back">Back</option>
+                        <option value="shoulders">Shoulders</option>
+                        <option value="biceps">Biceps</option>
+                        <option value="triceps">Triceps</option>
+                        <option value="quad">Quad</option>
+                        <option value="hamstring">Hamstring</option>
+                        <option value="core">Core</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Exercise list -->
+                <ul id="libList" class="divide-y divide-white/5 max-h-[calc(100vh-320px)] overflow-y-auto"></ul>
+            </div>
+
+        </aside>
+    </section>
+
+</main>
+
+<script>
+    const state = {
+      userId: 1,
+      session: null,
+      exercises: [],
+      timerInterval: null,
+      startTime: null,
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    async function handleLogout() {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login.html";
+    }
+
+    // timer
+
+    function startTimer() {
+      state.startTime = Date.now();
+      state.timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+        const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
+        const ss = String(elapsed % 60).padStart(2, "0");
+        $("sessionTimer").textContent      = `${mm}:${ss}`;
+        $("sessionTimerPanel").textContent = `${mm}:${ss}`;
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(state.timerInterval);
+      $("sessionTimer").textContent      = "00:00";
+      $("sessionTimerPanel").textContent = "00:00";
+    }
+
+    // data fetch
+
+    async function loadLibrary() {
+      try {
+        const res = await fetch(`/api/exercises?userId=${state.userId}`);
+        state.exercises = await res.json();
+        renderLibrary();
+      } catch { $("libList").innerHTML = `<li class="px-5 py-4 text-xs text-white/30">Gagal memuat library.</li>`; }
+    }
+
+    async function loadActiveSession() {
+      try {
+        const res = await fetch(`/api/workouts/active?userId=${state.userId}`);
+        if (res.status === 204) { state.session = null; renderWorkout(); return; }
+        state.session = await res.json();
+        renderWorkout();
+        if (state.session) startTimer();
+      } catch { state.session = null; renderWorkout(); }
+    }
+
+    async function startSession() {
+      try {
+        state.session = await postJson("/api/workouts/start", { userId: state.userId });
+        renderWorkout();
+        startTimer();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function finishSession() {
+      if (!state.session) return;
+      try {
+        await postJson(`/api/workouts/${state.session.id}/finish`, {
+          userId: state.userId,
+          notes: $("notesInput").value,
+        });
+        state.session = null;
+        stopTimer();
+        renderWorkout();
+        window.location.href = "/history.html";
+      } catch (e) { alert(e.message); }
+    }
+
+    async function cancelSession() {
+      if (!state.session || !confirm("Batalkan sesi ini?")) return;
+      try {
+        await fetch(`/api/workouts/${state.session.id}?userId=${state.userId}`, { method: "DELETE" });
+        state.session = null;
+        stopTimer();
+        renderWorkout();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function addExercise(exerciseId) {
+      if (!state.session) { alert("Mulai sesi dulu."); return; }
+      try {
+        await postJson(`/api/workouts/${state.session.id}/exercises`, {
+          userId: state.userId,
+          exerciseId,
+        });
+        await loadActiveSession();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function addSet(workoutExerciseId) {
+      const weightEl = document.querySelector(`.set-weight[data-we="${workoutExerciseId}"]`);
+      const repsEl   = document.querySelector(`.set-reps[data-we="${workoutExerciseId}"]`);
+      const weightKg = parseFloat(weightEl?.value ?? 0);
+      const reps     = parseInt(repsEl?.value ?? 0);
+
+      if (!reps || reps < 1) { alert("Reps wajib diisi."); return; }
+      if (weightKg <= 0)      { alert("Berat tidak boleh negatif."); return; }
+
+      try {
+        await postJson(`/api/workouts/exercises/${workoutExerciseId}/sets`, {
+          userId: state.userId, weightKg, reps,
+        });
+        if (weightEl) weightEl.value = "";
+        if (repsEl)   repsEl.value   = "";
+        await loadActiveSession();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function deleteSet(setId) {
+      try {
+        await fetch(`/api/workouts/exercises/sets/${setId}?userId=${state.userId}`, { method: "DELETE" });
+        await loadActiveSession();
+      } catch (e) { alert(e.message); }
+    }
+
+
+    function renderWorkout() {
+      const s = state.session;
+      $("emptyState").classList.toggle("hidden", !!s);
+      $("exercisePanel").classList.toggle("hidden", !s);
+      $("startBtn").disabled  = !!s;
+      $("finishBtn").disabled = !s;
+      $("cancelBtn").disabled = !s;
+
+      if (!s) return;
+
+      $("sessionId").textContent     = s.id;
+      $("sessionStatus").textContent = s.paused ? "Paused" : "Active";
+
+      const container = $("exerciseItems");
+      container.innerHTML = "";
+      (s.exercises ?? []).forEach((ex) => container.append(buildExerciseCard(ex)));
+    }
+
+    function buildExerciseCard(ex) {
+      const card = document.createElement("div");
+      card.className = "bg-[#141414] border border-white/5 rounded-xl overflow-hidden";
+      card.innerHTML = `
+        <!-- Exercise header -->
+        <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+          <h3 class="font-semibold text-white/90">${esc(ex.exerciseNameSnapshot)}</h3>
+          <span class="text-xs text-white/30">${esc(ex.sets.length)} set</span>
+        </div>
+
+        <!-- Set list -->
+        <div class="px-5 py-3">
+          <div class="grid grid-cols-4 gap-2 mb-2 text-xs text-white/30 uppercase tracking-widest">
+            <span>Set</span><span>KG</span><span>Reps</span><span></span>
+          </div>
+          ${ex.sets.map((set) => `
+            <div class="grid grid-cols-4 gap-2 items-center py-1.5 border-b border-white/5 last:border-0">
+              <span class="text-sm font-semibold text-white/50">${esc(set.setNumber)}</span>
+              <span class="text-sm text-white/80">${esc(set.weightKg)}</span>
+              <span class="text-sm text-white/80">${esc(set.reps)}</span>
+              <button class="text-red-400/50 hover:text-red-400 text-xs transition-colors text-right" data-del="${esc(set.id)}">✕</button>
+            </div>
+          `).join("")}
+        </div>
+
+        <!-- Add set form -->
+        <div class="px-5 pb-4 flex gap-2 items-center">
+          <input type="number" placeholder="KG" min="0" step="0.5"
+            class="set-weight w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors"
+            data-we="${esc(ex.id)}">
+          <input type="number" placeholder="Reps" min="1"
+            class="set-reps w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors"
+            data-we="${esc(ex.id)}">
+          <button class="btn-add-set flex-1 py-2 rounded-lg text-sm font-semibold" data-add-set="${esc(ex.id)}">
+            + Add Set
+          </button>
+        </div>
+      `;
+      return card;
+    }
+
+    function renderLibrary() {
+      const keyword = $("libSearch").value.toLowerCase();
+      const muscle  = $("libFilter").value;
+
+      const filtered = state.exercises.filter((ex) => {
+        const matchSearch = ex.name.toLowerCase().includes(keyword);
+        const matchMuscle = !muscle || ex.muscleGroup === muscle;
+        return matchSearch && matchMuscle;
+      });
+
+      $("libCount").textContent = `${filtered.length} exercise`;
+      const ul = $("libList");
+      ul.innerHTML = "";
+
+      if (filtered.length === 0) {
+        ul.innerHTML = `<li class="px-5 py-4 text-xs text-white/30">Tidak ada exercise.</li>`;
+        return;
+      }
+
+      filtered.forEach((ex) => {
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between px-4 py-3 hover:bg-white/3 transition-colors";
+        li.innerHTML = `
+          <div>
+            <p class="text-sm font-medium text-white/90">${esc(ex.name)}</p>
+            <p class="text-xs text-white/30 mt-0.5">${esc(ex.muscleGroup)} · ${esc(ex.equipment)}</p>
+          </div>
+          <button class="btn-add text-xs px-3 py-1.5" data-lib-id="${esc(ex.id)}">+ Add</button>
+        `;
+        ul.append(li);
+      });
+    }
+
+    // helper
+
+    async function postJson(url, body) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : {};
+      if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+      return data;
+    }
+
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    $("startBtn").addEventListener("click", startSession);
+    $("finishBtn").addEventListener("click", finishSession);
+    $("cancelBtn").addEventListener("click", cancelSession);
+
+    $("libSearch").addEventListener("input", renderLibrary);
+    $("libFilter").addEventListener("change", renderLibrary);
+
+    // Delegasi: add exercise dari library
+    $("libList").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-lib-id]");
+      if (btn) addExercise(Number(btn.dataset.libId));
+    });
+
+    // Delegasi: add set & delete set dari workout panel
+    $("exerciseItems").addEventListener("click", (e) => {
+      const addBtn = e.target.closest("[data-add-set]");
+      if (addBtn) { addSet(Number(addBtn.dataset.addSet)); return; }
+
+      const delBtn = e.target.closest("[data-del]");
+      if (delBtn) deleteSet(Number(delBtn.dataset.del));
+    });
+
+    // init
+
+    (async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) { window.location.href = "/login.html"; return; }
+      const user = await res.json();
+      state.userId = user.id;
+      $("userIdInput").value    = user.id;
+      $("usernameLabel").textContent = user.username;
+      await loadLibrary();
+      await loadActiveSession();
+    })();
+</script>
+
+</body>
+</html>
