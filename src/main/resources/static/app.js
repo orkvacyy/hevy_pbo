@@ -1,6 +1,7 @@
 const state = {
   exercises: [],
   search: "",
+  muscleFilter: "",
   userId: Number(document.getElementById("userIdInput").value) || 1,
 };
 
@@ -8,6 +9,7 @@ const $ = (id) => document.getElementById(id);
 const tableBody     = $("exerciseTableBody");
 const statusMsg     = $("statusMessage");
 const searchInput   = $("searchInput");
+const muscleSelect  = $("muscleFilter");
 const refreshButton = $("refreshButton");
 const totalCount    = $("totalCount");
 const strengthCount = $("strengthCount");
@@ -55,7 +57,6 @@ async function submitCustomExercise() {
     });
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.message || "Gagal menyimpan."; return; }
-
     closeModal();
     await loadExercises();
   } catch {
@@ -84,11 +85,14 @@ async function deleteExercise(exerciseId) {
 
 function render() {
   const keyword = state.search.toLowerCase();
-  const filtered = state.exercises.filter((ex) =>
-    [ex.name, ex.category, ex.muscleGroup, ex.equipment, ex.scope].some(
-      (v) => String(v).toLowerCase().includes(keyword)
-    )
-  );
+  const muscle  = state.muscleFilter;
+
+  const filtered = state.exercises.filter((ex) => {
+    const matchSearch = [ex.name, ex.category, ex.muscleGroup, ex.equipment, ex.scope]
+      .some((v) => String(v).toLowerCase().includes(keyword));
+    const matchMuscle = !muscle || ex.muscleGroup === muscle;
+    return matchSearch && matchMuscle;
+  });
 
   tableBody.innerHTML = "";
   filtered.forEach((ex) => tableBody.append(buildRow(ex)));
@@ -111,9 +115,9 @@ function buildRow(ex) {
     <td>${esc(ex.equipment)}</td>
     <td><span class="badge badge-${esc(ex.scope)}">${esc(ex.scope)}</span></td>
     <td>
-      ${isLocal ? `
-        <button class="btn-delete text-xs px-3 py-1.5 rounded" data-del-id="${esc(ex.id)}">Hapus</button>
-      ` : `<span class="text-xs text-white/20">—</span>`}
+      ${isLocal
+        ? `<button class="btn-delete text-xs px-3 py-1.5 rounded" data-del-id="${esc(ex.id)}">Hapus</button>`
+        : `<span class="text-xs text-white/20">—</span>`}
     </td>
   `;
   return tr;
@@ -130,6 +134,7 @@ function esc(v) {
 
 
 searchInput.addEventListener("input", (e) => { state.search = e.target.value; render(); });
+muscleSelect.addEventListener("change", (e) => { state.muscleFilter = e.target.value; render(); });
 refreshButton.addEventListener("click", loadExercises);
 
 tableBody.addEventListener("click", (e) => {
@@ -137,7 +142,6 @@ tableBody.addEventListener("click", (e) => {
   if (btn) deleteExercise(Number(btn.dataset.delId));
 });
 
-// submit w enter
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !document.getElementById("modal").classList.contains("hidden")) {
     submitCustomExercise();
