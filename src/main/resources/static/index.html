@@ -58,6 +58,19 @@
                 <input id="searchInput" type="search" placeholder="Cari exercise..."
                        class="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#e63946]/60 w-56 transition-colors">
             </div>
+            <!-- Filter muscle group -->
+            <select id="muscleFilter" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <option value="">Semua Muscle</option>
+                <option value="chest">Chest</option>
+                <option value="back">Back</option>
+                <option value="shoulders">Shoulders</option>
+                <option value="biceps">Biceps</option>
+                <option value="triceps">Triceps</option>
+                <option value="quad">Quad</option>
+                <option value="hamstring">Hamstring</option>
+                <option value="core">Core</option>
+                <option value="other">Other</option>
+            </select>
             <button id="refreshButton" class="btn-ghost px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.96"/></svg>
                 Refresh
@@ -203,12 +216,21 @@
       if (e.key === "Escape") closeModal();
     });
 
+    // Guard: load exercise-image.js dulu, baru app.js setelah session confirmed
     (async () => {
       const res = await fetch("/api/auth/me");
       if (!res.ok) { window.location.href = "/login.html"; return; }
       const user = await res.json();
       document.getElementById("userIdInput").value = user.id;
       document.getElementById("usernameLabel").textContent = user.username;
+
+      // Load exercise-image.js dulu karena app.js butuh renderExerciseThumbnail
+      await new Promise((resolve) => {
+        const s = document.createElement("script");
+        s.src = "/exercise-image.js";
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
 
       const script = document.createElement("script");
       script.src = "/app.js";

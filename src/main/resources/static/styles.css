@@ -119,3 +119,38 @@ body {
   transition: all 0.15s;
 }
 .btn-delete:hover { background: #e63946; color: #fff; border-color: #e63946; }
+
+/* Exercise thumbnail */
+.exercise-thumb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.exercise-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.exercise-thumb.placeholder {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.thumb-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.thumb-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+}

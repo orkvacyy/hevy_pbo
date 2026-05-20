@@ -95,7 +95,16 @@ function render() {
   });
 
   tableBody.innerHTML = "";
-  filtered.forEach((ex) => tableBody.append(buildRow(ex)));
+  filtered.forEach((ex) => {
+    const tr = buildRow(ex);
+    tableBody.append(tr);
+
+    // render thumbnail setelah row masuk DOM
+    const thumbContainer = tr.querySelector(".thumb-container");
+    if (thumbContainer) {
+      renderExerciseThumbnail(ex.name, ex.muscleGroup, thumbContainer);
+    }
+  });
 
   totalCount.textContent    = state.exercises.length;
   strengthCount.textContent = state.exercises.filter((e) => e.category === "strength").length;
@@ -109,7 +118,12 @@ function buildRow(ex) {
   const isLocal = ex.scope === "local";
   const tr = document.createElement("tr");
   tr.innerHTML = `
-    <td class="font-medium text-white/90">${esc(ex.name)}</td>
+    <td>
+      <div class="flex items-center gap-3">
+        <div class="thumb-container w-10 h-10 rounded-lg overflow-hidden shrink-0"></div>
+        <span class="font-medium text-white/90">${esc(ex.name)}</span>
+      </div>
+    </td>
     <td><span class="badge badge-${esc(ex.category)}">${esc(ex.category)}</span></td>
     <td>${esc(ex.muscleGroup)}</td>
     <td>${esc(ex.equipment)}</td>
@@ -131,7 +145,6 @@ function esc(v) {
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
 
 searchInput.addEventListener("input", (e) => { state.search = e.target.value; render(); });
 muscleSelect.addEventListener("change", (e) => { state.muscleFilter = e.target.value; render(); });
