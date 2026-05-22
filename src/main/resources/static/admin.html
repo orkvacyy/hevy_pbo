@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hevy PBO — Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="bg-[#0f0f0f] text-white min-h-screen">
+
+<!-- Sidebar -->
+<aside class="sidebar fixed top-0 left-0 h-full w-64 bg-[#141414] border-r border-white/5 flex flex-col z-50">
+    <div class="p-6 border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#e63946] flex items-center justify-center font-bold text-sm" style="font-family:'Syne',sans-serif;">H</div>
+            <span class="font-bold text-base tracking-tight" style="font-family:'Syne',sans-serif;">Hevy PBO</span>
+        </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1">
+        <a href="/" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
+            Library
+        </a>
+        <a href="/workout.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Workout
+        </a>
+        <a href="/history.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            History
+        </a>
+        <a href="/admin.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Admin
+        </a>
+    </nav>
+
+    <div class="p-4 border-t border-white/5">
+        <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Logged in as</p>
+        <p id="usernameLabel" class="text-sm font-semibold text-white/80">-</p>
+        <p class="text-xs text-[#e63946] mt-0.5">Administrator</p>
+        <button onclick="handleLogout()" class="mt-3 w-full btn-ghost py-2 rounded-lg text-xs font-semibold">Logout</button>
+    </div>
+</aside>
+
+<!-- Main -->
+<main class="ml-64 min-h-screen flex flex-col">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-40 bg-[#0f0f0f]/80 backdrop-blur border-b border-white/5 px-8 py-4 flex items-center justify-between">
+        <div>
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Admin</p>
+            <h1 class="text-lg font-bold tracking-tight" style="font-family:'Syne',sans-serif;">Dashboard Admin</h1>
+        </div>
+        <!-- Tab switcher -->
+        <div class="flex bg-white/5 rounded-lg p-1 gap-1">
+            <button onclick="switchTab('users')" id="tabUsers"
+                    class="tab-btn px-4 py-1.5 rounded-md text-xs font-semibold transition-all">
+                Kelola User
+            </button>
+            <button onclick="switchTab('exercises')" id="tabExercises"
+                    class="tab-btn px-4 py-1.5 rounded-md text-xs font-semibold transition-all">
+                Kelola Exercise
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats -->
+    <section class="px-8 pt-6 grid grid-cols-3 gap-4">
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total User</p>
+            <p id="statUsers" class="text-3xl font-bold" style="font-family:'Syne',sans-serif;">0</p>
+        </div>
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">User Aktif</p>
+            <p id="statActiveUsers" class="text-3xl font-bold text-green-400" style="font-family:'Syne',sans-serif;">0</p>
+        </div>
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Global Exercise</p>
+            <p id="statExercises" class="text-3xl font-bold text-[#4cc9f0]" style="font-family:'Syne',sans-serif;">0</p>
+        </div>
+    </section>
+
+    <!-- User management panel -->
+    <section id="panelUsers" class="px-8 pt-6 pb-8">
+        <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
+            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30" id="userStatusMsg">Memuat data user...</div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                    <tr class="border-b border-white/5">
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Username</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Email</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Role</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Status</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Aksi</th>
+                    </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Exercise management panel -->
+    <section id="panelExercises" class="hidden px-8 pt-6 pb-8">
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-white/50">Kelola exercise global yang tersedia untuk semua user.</p>
+            <button onclick="openExerciseModal()" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Tambah Exercise Global
+            </button>
+        </div>
+        <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
+            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30" id="exStatusMsg">Memuat exercise global...</div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                    <tr class="border-b border-white/5">
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Nama</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Kategori</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Muscle</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Equipment</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Aksi</th>
+                    </tr>
+                    </thead>
+                    <tbody id="exTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Modal reset password -->
+<div id="modalPassword" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePasswordModal()"></div>
+    <div class="relative bg-[#1a1a1a] border border-white/10 rounded-2xl w-full max-w-sm mx-4 overflow-hidden">
+        <div class="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+            <h2 class="text-base font-bold" style="font-family:'Syne',sans-serif;">Reset Password</h2>
+            <button onclick="closePasswordModal()" class="text-white/30 hover:text-white transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-white/50">Reset password untuk user: <span id="resetUsernameLabel" class="text-white font-semibold"></span></p>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Password Baru</label>
+                <input id="newPasswordInput" type="password" placeholder="Min. 6 karakter"
+                       class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+            </div>
+            <p id="passwordError" class="text-xs text-[#e63946] min-h-4"></p>
+        </div>
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="closePasswordModal()" class="flex-1 btn-ghost py-2.5 rounded-xl text-sm font-semibold">Batal</button>
+            <button onclick="submitResetPassword()" class="flex-1 btn-primary py-2.5 rounded-xl text-sm font-semibold">Reset</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tambah/edit exercise global -->
+<div id="modalExercise" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeExerciseModal()"></div>
+    <div class="relative bg-[#1a1a1a] border border-white/10 rounded-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div class="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+            <h2 id="exerciseModalTitle" class="text-base font-bold" style="font-family:'Syne',sans-serif;">Tambah Exercise Global</h2>
+            <button onclick="closeExerciseModal()" class="text-white/30 hover:text-white transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <input id="editExerciseId" type="hidden" value="">
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Nama Exercise</label>
+                <input id="exGlobalName" type="text" placeholder="Contoh: Cable Fly"
+                       class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+            </div>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Kategori</label>
+                <select id="exGlobalCategory" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                    <option value="strength">Strength</option>
+                    <option value="cardio">Cardio</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Muscle Group</label>
+                <select id="exGlobalMuscle" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                    <option value="chest">Chest</option>
+                    <option value="back">Back</option>
+                    <option value="shoulders">Shoulders</option>
+                    <option value="biceps">Biceps</option>
+                    <option value="triceps">Triceps</option>
+                    <option value="quad">Quad</option>
+                    <option value="hamstring">Hamstring</option>
+                    <option value="core">Core</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Equipment</label>
+                <select id="exGlobalEquipment" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                    <option value="barbell">Barbell</option>
+                    <option value="dumbbell">Dumbbell</option>
+                    <option value="machine">Machine</option>
+                    <option value="cable">Cable</option>
+                    <option value="bodyweight">Bodyweight</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <p id="exerciseModalError" class="text-xs text-[#e63946] min-h-4"></p>
+        </div>
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="closeExerciseModal()" class="flex-1 btn-ghost py-2.5 rounded-xl text-sm font-semibold">Batal</button>
+            <button onclick="submitExercise()" class="flex-1 btn-primary py-2.5 rounded-xl text-sm font-semibold">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    let users = [];
+    let globalExercises = [];
+    let resetTargetUserId = null;
+    let activeTab = "users";
+
+    async function handleLogout() {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login.html";
+    }
+
+
+    function switchTab(tab) {
+      activeTab = tab;
+      $("panelUsers").classList.toggle("hidden", tab !== "users");
+      $("panelExercises").classList.toggle("hidden", tab !== "exercises");
+      $("tabUsers").classList.toggle("bg-white/10", tab === "users");
+      $("tabUsers").classList.toggle("text-white", tab === "users");
+      $("tabUsers").classList.toggle("text-white/40", tab !== "users");
+      $("tabExercises").classList.toggle("bg-white/10", tab === "exercises");
+      $("tabExercises").classList.toggle("text-white", tab === "exercises");
+      $("tabExercises").classList.toggle("text-white/40", tab !== "exercises");
+    }
+
+
+    async function loadUsers() {
+      try {
+        const res = await fetch("/api/admin/users");
+        if (!res.ok) throw new Error();
+        users = await res.json();
+        renderUsers();
+      } catch {
+        $("userStatusMsg").textContent = "Gagal memuat data user.";
+      }
+    }
+
+    async function loadGlobalExercises() {
+      try {
+        const res = await fetch("/api/exercises");
+        if (!res.ok) throw new Error();
+        const all = await res.json();
+        globalExercises = all.filter((ex) => ex.scope === "global");
+        renderExercises();
+      } catch {
+        $("exStatusMsg").textContent = "Gagal memuat exercise global.";
+      }
+    }
+
+
+    function renderUsers() {
+      const active = users.filter((u) => u.role !== "admin" && u.active !== false);
+      $("statUsers").textContent       = users.length;
+      $("statActiveUsers").textContent = users.filter((u) => u.active !== false).length;
+
+      const tbody = $("userTableBody");
+      tbody.innerHTML = "";
+      $("userStatusMsg").textContent = `${users.length} user terdaftar.`;
+
+      users.forEach((user) => {
+        const isAdmin  = user.role === "admin";
+        const isActive = user.active !== false;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="font-medium text-white/90">${esc(user.username)}</td>
+          <td>${esc(user.email)}</td>
+          <td>
+            <span class="badge ${isAdmin ? "badge-strength" : "badge-global"}">
+              ${esc(user.role)}
+            </span>
+          </td>
+          <td>
+            <span class="badge ${isActive ? "" : "badge-local"}" style="${isActive ? "background:rgba(17,163,106,0.15);color:#11a36a" : ""}">
+              ${isActive ? "Aktif" : "Nonaktif"}
+            </span>
+          </td>
+          <td>
+            ${isAdmin ? `<span class="text-xs text-white/20">—</span>` : `
+              <div class="flex gap-2">
+                <button class="btn-ghost text-xs px-3 py-1.5 rounded" onclick="toggleUser(${user.id}, ${isActive})">
+                  ${isActive ? "Nonaktifkan" : "Aktifkan"}
+                </button>
+                <button class="btn-ghost text-xs px-3 py-1.5 rounded" onclick="openPasswordModal(${user.id}, '${esc(user.username)}')">
+                  Reset Password
+                </button>
+              </div>
+            `}
+          </td>
+        `;
+        tbody.append(tr);
+      });
+    }
+
+
+    function renderExercises() {
+      $("statExercises").textContent = globalExercises.length;
+      const tbody = $("exTableBody");
+      tbody.innerHTML = "";
+      $("exStatusMsg").textContent = `${globalExercises.length} exercise global.`;
+
+      globalExercises.forEach((ex) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="font-medium text-white/90">${esc(ex.name)}</td>
+          <td><span class="badge badge-${esc(ex.category)}">${esc(ex.category)}</span></td>
+          <td>${esc(ex.muscleGroup)}</td>
+          <td>${esc(ex.equipment)}</td>
+          <td>
+            <div class="flex gap-2">
+              <button class="btn-ghost text-xs px-3 py-1.5 rounded" onclick="openEditExercise(${ex.id}, '${esc(ex.name)}', '${esc(ex.category)}', '${esc(ex.muscleGroup)}', '${esc(ex.equipment)}')">
+                Edit
+              </button>
+              <button class="btn-delete text-xs px-3 py-1.5 rounded" onclick="deleteGlobalExercise(${ex.id}, '${esc(ex.name)}')">
+                Hapus
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.append(tr);
+      });
+    }
+
+    // user action
+
+    async function toggleUser(userId, currentlyActive) {
+      const endpoint = currentlyActive ? "deactivate" : "activate";
+      try {
+        const res = await fetch(`/api/admin/users/${userId}/${endpoint}`, { method: "PUT" });
+        if (!res.ok) throw new Error();
+        await loadUsers();
+      } catch {
+        alert("Gagal mengubah status user.");
+      }
+    }
+
+    function openPasswordModal(userId, username) {
+      resetTargetUserId = userId;
+      $("resetUsernameLabel").textContent = username;
+      $("newPasswordInput").value = "";
+      $("passwordError").textContent = "";
+      $("modalPassword").classList.remove("hidden");
+    }
+
+    function closePasswordModal() {
+      $("modalPassword").classList.add("hidden");
+      resetTargetUserId = null;
+    }
+
+    async function submitResetPassword() {
+      const newPassword = $("newPasswordInput").value;
+      const errEl       = $("passwordError");
+      errEl.textContent = "";
+
+      if (!newPassword || newPassword.length < 6) {
+        errEl.textContent = "Password minimal 6 karakter.";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/users/${resetTargetUserId}/reset-password`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newPassword }),
+        });
+        if (!res.ok) throw new Error();
+        closePasswordModal();
+        alert("Password berhasil direset.");
+      } catch {
+        errEl.textContent = "Gagal mereset password.";
+      }
+    }
+
+    // exercise action
+
+    function openExerciseModal() {
+      $("exerciseModalTitle").textContent = "Tambah Exercise Global";
+      $("editExerciseId").value           = "";
+      $("exGlobalName").value             = "";
+      $("exerciseModalError").textContent = "";
+      $("modalExercise").classList.remove("hidden");
+    }
+
+    function openEditExercise(id, name, category, muscle, equipment) {
+      $("exerciseModalTitle").textContent    = "Edit Exercise Global";
+      $("editExerciseId").value              = id;
+      $("exGlobalName").value                = name;
+      $("exGlobalCategory").value            = category;
+      $("exGlobalMuscle").value              = muscle;
+      $("exGlobalEquipment").value           = equipment;
+      $("exerciseModalError").textContent    = "";
+      $("modalExercise").classList.remove("hidden");
+    }
+
+    function closeExerciseModal() {
+      $("modalExercise").classList.add("hidden");
+    }
+
+    async function submitExercise() {
+      const id        = $("editExerciseId").value;
+      const name      = $("exGlobalName").value.trim();
+      const category  = $("exGlobalCategory").value;
+      const muscle    = $("exGlobalMuscle").value;
+      const equipment = $("exGlobalEquipment").value;
+      const errEl     = $("exerciseModalError");
+      errEl.textContent = "";
+
+      if (!name) { errEl.textContent = "Nama exercise wajib diisi."; return; }
+
+      const isEdit = !!id;
+      const url    = isEdit ? `/api/admin/exercises/${id}` : "/api/admin/exercises";
+      const method = isEdit ? "PUT" : "POST";
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, category, muscleGroup: muscle, equipment }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          errEl.textContent = data.message || "Gagal menyimpan.";
+          return;
+        }
+        closeExerciseModal();
+        await loadGlobalExercises();
+      } catch {
+        errEl.textContent = "Terjadi kesalahan, coba lagi.";
+      }
+    }
+
+    async function deleteGlobalExercise(id, name) {
+      if (!confirm(`Hapus exercise "${name}"? Exercise yang sudah dipakai di history tetap aman.`)) return;
+      try {
+        const res = await fetch(`/api/admin/exercises/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error();
+        await loadGlobalExercises();
+      } catch {
+        alert("Gagal menghapus exercise.");
+      }
+    }
+
+    // helper
+
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // init
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closePasswordModal();
+        closeExerciseModal();
+      }
+    });
+
+    (async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) { window.location.href = "/login.html"; return; }
+      const user = await res.json();
+
+      // Guard: hanya admin yang boleh masuk
+      if (user.role !== "admin") {
+        window.location.href = "/";
+        return;
+      }
+
+      $("usernameLabel").textContent = user.username;
+
+      // Set tab default aktif
+      switchTab("users");
+
+      await Promise.all([loadUsers(), loadGlobalExercises()]);
+    })();
+</script>
+
+</body>
+</html>

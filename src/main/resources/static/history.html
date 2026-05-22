@@ -1,269 +1,590 @@
 <!doctype html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hevy PBO — History</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
 </head>
-<body class="bg-[#0f0f0f] text-white min-h-screen">
+<body>
 
-<!-- Sidebar -->
-<aside class="sidebar fixed top-0 left-0 h-full w-64 bg-[#141414] border-r border-white/5 flex flex-col z-50">
-    <div class="p-6 border-b border-white/5">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-[#e63946] flex items-center justify-center font-bold text-sm" style="font-family:'Syne',sans-serif;">H</div>
-            <span class="font-bold text-base tracking-tight" style="font-family:'Syne',sans-serif;">Hevy PBO</span>
-        </div>
-    </div>
+<div class="app-root">
 
-    <nav class="flex-1 p-4 space-y-1">
-        <a href="/" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
-            Library
-        </a>
-        <a href="/workout.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Workout
-        </a>
-        <a href="/history.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            History
-        </a>
-    </nav>
-
-    <div class="p-4 border-t border-white/5">
-        <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Logged in as</p>
-        <p id="usernameLabel" class="text-sm font-semibold text-white/80">-</p>
-        <button onclick="handleLogout()" class="mt-3 w-full btn-ghost py-2 rounded-lg text-xs font-semibold">Logout</button>
-    </div>
-</aside>
-
-<!-- Main -->
-<main class="ml-64 min-h-screen flex flex-col">
-
-    <!-- Top bar -->
-    <header class="sticky top-0 z-40 bg-[#0f0f0f]/80 backdrop-blur border-b border-white/5 px-8 py-4 flex items-center justify-between">
-        <div>
-            <p class="text-xs text-white/30 uppercase tracking-widest mb-0.5">Riwayat</p>
-            <h1 class="text-lg font-bold tracking-tight" style="font-family:'Syne',sans-serif;">Workout History</h1>
-        </div>
-        <a href="/workout.html" class="btn-primary px-5 py-2 rounded-lg text-sm font-semibold">
-            + New Workout
-        </a>
-    </header>
-
-    <!-- Stats -->
-    <section class="px-8 pt-6 grid grid-cols-3 gap-4">
-        <div class="stat-card rounded-xl p-5 border border-white/5">
-            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total Sesi</p>
-            <p id="totalSessions" class="text-3xl font-bold" style="font-family:'Syne',sans-serif;">0</p>
-        </div>
-        <div class="stat-card rounded-xl p-5 border border-white/5">
-            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total Exercise</p>
-            <p id="totalExercises" class="text-3xl font-bold text-[#e63946]" style="font-family:'Syne',sans-serif;">0</p>
-        </div>
-        <div class="stat-card rounded-xl p-5 border border-white/5">
-            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total Set</p>
-            <p id="totalSets" class="text-3xl font-bold text-[#4cc9f0]" style="font-family:'Syne',sans-serif;">0</p>
-        </div>
-    </section>
-
-    <!-- History list -->
-    <section class="px-8 pt-6 pb-8 flex gap-6 items-start">
-
-        <!-- Session list -->
-        <div class="flex-1 min-w-0 space-y-3">
-            <div id="loadingState" class="bg-[#141414] border border-white/5 rounded-xl px-5 py-8 text-center text-xs text-white/30">
-                Memuat riwayat...
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-mark"><span class="brand-mark-dot"></span></div>
+            <div class="brand-text">
+                <div class="brand-name">HEVY</div>
+                <div class="brand-sub">PBO · LIFTING LOG</div>
             </div>
-            <div id="emptyState" class="hidden bg-[#141414] border border-white/5 rounded-xl px-5 py-12 text-center">
-                <p class="text-white/20 text-sm">Belum ada riwayat workout.</p>
-                <p class="text-white/10 text-xs mt-1">Selesaikan sesi pertamamu!</p>
-                <a href="/workout.html" class="inline-block mt-4 btn-primary px-5 py-2 rounded-lg text-xs font-semibold">Mulai Workout</a>
-            </div>
-            <div id="sessionList" class="space-y-3"></div>
         </div>
 
-        <!-- Detail panel -->
-        <aside class="w-80 shrink-0 sticky top-24">
-            <div id="detailPanel" class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
-                <div class="px-5 py-8 text-center">
-                    <p class="text-white/20 text-sm">Pilih sesi untuk melihat detail.</p>
+        <nav class="sidebar-nav">
+            <a href="/" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
+                <span>Library</span>
+            </a>
+            <a href="/workout.html" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Workout</span>
+            </a>
+            <a href="/history.html" class="nav-item is-active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                <span>History</span>
+                <span class="nav-marker"></span>
+            </a>
+            <a href="/admin.html" id="adminLink" class="nav-item" style="display:none">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg>
+                <span>Admin</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-foot">
+            <div class="user-line">
+                <div class="user-ava" id="userAva">-</div>
+                <div class="user-meta">
+                    <div class="user-name" id="usernameLabel">-</div>
+                    <div class="user-role" id="userRole">Athlete</div>
                 </div>
             </div>
-        </aside>
+            <button class="btn-ghost btn-sm full" onclick="handleLogout()">Sign out</button>
+        </div>
+    </aside>
 
-    </section>
+    <!-- ============ MAIN ============ -->
+    <main class="app-main">
 
-</main>
+        <div class="page-shell">
+
+            <!-- ============ HEADER ============ -->
+            <header class="page-header">
+                <div class="page-title">
+                    <div class="eyebrow">03 — History</div>
+                    <h1 class="page-h1">Workout <span class="page-h1-suffix">Analytics</span></h1>
+                </div>
+                <div class="page-actions">
+                    <a href="/workout.html" class="btn-primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>New Workout</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- ============ LOADING STATE ============ -->
+            <div id="loadingState" class="empty-state">
+                <div class="empty-mark"><span></span><span></span><span></span></div>
+                <div class="empty-title">Memuat riwayat...</div>
+            </div>
+
+            <!-- ============ EMPTY STATE ============ -->
+            <div id="emptyState" class="empty-state" style="display:none">
+                <div class="empty-mark"><span></span><span></span><span></span></div>
+                <div class="empty-title">Belum ada riwayat workout</div>
+                <div class="empty-sub">Selesaikan sesi pertamamu untuk melihat analytics di sini.</div>
+                <a href="/workout.html" class="btn-primary" style="margin-top:16px">
+                    <span>Mulai Workout</span>
+                </a>
+            </div>
+
+            <!-- ============ DATA VIEW ============ -->
+            <div id="dataView" style="display:none">
+
+                <!-- Hero stats -->
+                <section class="hero-grid quad">
+                    <div class="hero-stat is-mega">
+                        <div class="hero-stat-label">Total Volume</div>
+                        <div class="hero-stat-value is-mono">
+                            <span class="hero-stat-num" id="statVolumeMain">0</span>
+                            <span class="hero-stat-unit">k kg</span>
+                        </div>
+                        <div class="hero-stat-sub" id="statVolumeSub">8 minggu terakhir</div>
+                        <div class="spark-line" id="sparkContainer"></div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">Sesi</div>
+                        <div class="hero-stat-value"><span class="hero-stat-num" id="statSessions">0</span></div>
+                        <div class="hero-stat-sub" id="statSessionsSub">0 jam total</div>
+                    </div>
+                    <div class="hero-stat is-accent">
+                        <div class="hero-stat-label">Total Set</div>
+                        <div class="hero-stat-value"><span class="hero-stat-num" id="statSets">0</span></div>
+                        <div class="hero-stat-sub" id="statSetsSub">0 reps</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">Personal Records</div>
+                        <div class="hero-stat-value"><span class="hero-stat-num" id="statPRs">0</span></div>
+                        <div class="hero-stat-sub">diraih sampai sekarang</div>
+                    </div>
+                </section>
+
+                <!-- Viz: bar chart + donut -->
+                <section class="viz-grid">
+                    <div class="viz-card span-2">
+                        <div class="viz-head">
+                            <div>
+                                <div class="eyebrow">Weekly Volume</div>
+                                <div class="viz-title">Progressive overload</div>
+                            </div>
+                            <div class="seg-control sm">
+                                <button class="seg is-active">8W</button>
+                                <button class="seg">3M</button>
+                                <button class="seg">1Y</button>
+                            </div>
+                        </div>
+                        <div class="bar-chart" id="barChart"></div>
+                    </div>
+
+                    <div class="viz-card">
+                        <div class="viz-head">
+                            <div>
+                                <div class="eyebrow">Muscle Split</div>
+                                <div class="viz-title">Distribusi volume</div>
+                            </div>
+                        </div>
+                        <div class="donut-wrap" id="donutWrap"></div>
+                    </div>
+                </section>
+
+                <!-- PR strip -->
+                <section class="pr-strip">
+                    <div class="pr-head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v4a6 6 0 0 1-12 0V4z"/><path d="M6 6H3v2a3 3 0 0 0 3 3M18 6h3v2a3 3 0 0 1-3 3M9 18h6M10 14v4M14 14v4"/></svg>
+                        <span class="eyebrow">Recent PRs</span>
+                        <span class="dim small">top by score (weight × reps)</span>
+                    </div>
+                    <div class="pr-list" id="prList"></div>
+                </section>
+
+                <!-- Session list + detail -->
+                <section class="hist-split">
+                    <div class="hist-list" id="sessionList">
+                        <div class="hist-list-head">
+                            <span class="eyebrow">All Sessions</span>
+                            <span class="dim small" id="sessionCount">0 total</span>
+                        </div>
+                        <div id="sessionCards"></div>
+                    </div>
+
+                    <aside class="hist-detail">
+                        <div id="detailPanel"></div>
+                    </aside>
+                </section>
+
+            </div>
+        </div>
+
+    </main>
+</div>
 
 <script>
-    let userId = 1;
-    let sessions = [];
+    /* =====================================================
+       STATE
+       ===================================================== */
+    const state = {
+        userId: 1,
+        user: null,
+        sessions: [],
+        finished: [],
+        selectedId: null,
+    };
 
     const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    const fmtNum = (n) => new Intl.NumberFormat("id-ID").format(Math.round(n));
+    const fmtDate = (iso, opts) => new Date(iso).toLocaleDateString("id-ID", opts || { weekday: "long", day: "numeric", month: "long" });
+    const fmtTime = (iso) => new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
+    /* =====================================================
+       AUTH
+       ===================================================== */
     async function handleLogout() {
-      await fetch("/api/auth/logout", { method: "POST" });
-      window.location.href = "/login.html";
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/login.html";
     }
 
-    // fetch data
+    async function initAuth() {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) { window.location.href = "/login.html"; return false; }
+        const user = await res.json();
+        state.user = user;
+        state.userId = user.id;
+        $("usernameLabel").textContent = user.username;
+        $("userAva").textContent = (user.username || "?").slice(0, 1).toUpperCase();
+        $("userRole").textContent = user.role === "admin" ? "Administrator" : "Athlete";
+        if (user.role === "admin") $("adminLink").style.display = "";
+        return true;
+    }
 
+    /* =====================================================
+       DATA
+       ===================================================== */
     async function loadHistory() {
-      try {
-        const res = await fetch(`/api/workouts?userId=${userId}`);
-        if (!res.ok) throw new Error();
-        sessions = await res.json();
-        renderList();
-      } catch {
-        $("loadingState").textContent = "Gagal memuat riwayat.";
-      }
+        try {
+            const res = await fetch(`/api/workouts?userId=${state.userId}`);
+            if (!res.ok) throw new Error();
+            state.sessions = await res.json();
+            state.finished = state.sessions.filter((s) => s.finishedAt);
+            renderAll();
+        } catch {
+            $("loadingState").innerHTML = `
+                <div class="empty-mark"><span></span><span></span><span></span></div>
+                <div class="empty-title">Gagal memuat riwayat</div>
+                <div class="empty-sub">Cek koneksi atau coba refresh.</div>
+            `;
+        }
     }
 
-
-    function renderList() {
-      $("loadingState").classList.add("hidden");
-
-      // Hanya tampilkan sesi yang sudah selesai (finished_at tidak null)
-      const finished = sessions.filter((s) => s.finishedAt);
-
-      if (finished.length === 0) {
-        $("emptyState").classList.remove("hidden");
-        return;
-      }
-
-      // Hitung stats
-      const totalEx  = finished.reduce((acc, s) => acc + (s.exercises?.length ?? 0), 0);
-      const totalSet = finished.reduce((acc, s) =>
-        acc + (s.exercises?.reduce((a, e) => a + (e.sets?.length ?? 0), 0) ?? 0), 0);
-
-      $("totalSessions").textContent  = finished.length;
-      $("totalExercises").textContent = totalEx;
-      $("totalSets").textContent      = totalSet;
-
-      const container = $("sessionList");
-      container.innerHTML = "";
-      finished.forEach((session) => container.append(buildSessionCard(session)));
+    function durationMin(session) {
+        if (!session.finishedAt) return 0;
+        return Math.round((new Date(session.finishedAt) - new Date(session.startedAt)) / 60000);
     }
 
-    function buildSessionCard(session) {
-      const started  = new Date(session.startedAt);
-      const finished = session.finishedAt ? new Date(session.finishedAt) : null;
-      const duration = finished
-        ? Math.round((finished - started) / 60000)
-        : 0;
-
-      const exCount  = session.exercises?.length ?? 0;
-      const setCount = session.exercises?.reduce((a, e) => a + (e.sets?.length ?? 0), 0) ?? 0;
-
-      const card = document.createElement("div");
-      card.className = "bg-[#141414] border border-white/5 rounded-xl px-5 py-4 cursor-pointer hover:border-white/10 transition-colors";
-      card.innerHTML = `
-        <div class="flex items-start justify-between mb-3">
-          <div>
-            <p class="text-sm font-semibold text-white/90">
-              ${esc(started.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}
-            </p>
-            <p class="text-xs text-white/30 mt-0.5">${esc(started.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }))}</p>
-          </div>
-          <span class="text-xs text-white/30 bg-white/5 px-2 py-1 rounded">${duration} menit</span>
-        </div>
-        <div class="flex gap-4 text-xs text-white/40">
-          <span>${exCount} exercise</span>
-          <span>${setCount} set</span>
-          ${session.notes ? `<span class="truncate max-w-[160px]">"${esc(session.notes)}"</span>` : ""}
-        </div>
-        ${exCount > 0 ? `
-        <div class="mt-3 flex flex-wrap gap-1.5">
-          ${(session.exercises ?? []).slice(0, 4).map((ex) =>
-            `<span class="text-xs bg-white/5 text-white/40 px-2 py-0.5 rounded">${esc(ex.exerciseNameSnapshot)}</span>`
-          ).join("")}
-          ${exCount > 4 ? `<span class="text-xs text-white/20">+${exCount - 4} lainnya</span>` : ""}
-        </div>` : ""}
-      `;
-
-      card.addEventListener("click", () => renderDetail(session));
-      return card;
+    function sessionVolume(session) {
+        return (session.exercises || []).reduce((a, e) =>
+            a + (e.sets || []).reduce((b, s) => b + (s.weightKg || 0) * (s.reps || 0), 0), 0);
     }
 
+    function sessionSets(session) {
+        return (session.exercises || []).reduce((a, e) => a + (e.sets?.length || 0), 0);
+    }
 
-    function renderDetail(session) {
-      // Highlight card yang dipilih
-      document.querySelectorAll("#sessionList > div").forEach((c) =>
-        c.classList.remove("border-[#e63946]/40")
-      );
-      event.currentTarget.classList.add("border-[#e63946]/40");
+    function sessionReps(session) {
+        return (session.exercises || []).reduce((a, e) => a + (e.sets || []).reduce((b, s) => b + (s.reps || 0), 0), 0);
+    }
 
-      const started  = new Date(session.startedAt);
-      const finished = session.finishedAt ? new Date(session.finishedAt) : null;
-      const duration = finished ? Math.round((finished - started) / 60000) : 0;
+    function computePRs(finished) {
+        const map = new Map();
+        finished.forEach((s) => {
+            (s.exercises || []).forEach((ex) => {
+                (ex.sets || []).forEach((set) => {
+                    if (!set.weightKg) return;
+                    const score = (set.weightKg || 0) * (set.reps || 0);
+                    const cur = map.get(ex.exerciseNameSnapshot);
+                    if (!cur || cur.score < score) {
+                        map.set(ex.exerciseNameSnapshot, {
+                            name: ex.exerciseNameSnapshot,
+                            muscleGroup: ex.muscleGroup,
+                            weightKg: set.weightKg,
+                            reps: set.reps,
+                            score,
+                            date: s.startedAt,
+                        });
+                    }
+                });
+            });
+        });
+        return [...map.values()].sort((a, b) => b.score - a.score);
+    }
 
-      const panel = $("detailPanel");
-      panel.innerHTML = `
-        <!-- Header -->
-        <div class="px-5 py-4 border-b border-white/5">
-          <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Detail Sesi</p>
-          <p class="text-base font-bold" style="font-family:'Syne',sans-serif;">
-            ${esc(started.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }))}
-          </p>
-          <p class="text-xs text-white/30 mt-1">${duration} menit · ${session.exercises?.length ?? 0} exercise</p>
-        </div>
+    function computeMuscleSplit(finished) {
+        const out = {};
+        finished.forEach((s) => {
+            (s.exercises || []).forEach((ex) => {
+                const m = ex.muscleGroup || "other";
+                const v = (ex.sets || []).reduce((a, st) => a + (st.weightKg || 0) * (st.reps || 0), 0);
+                out[m] = (out[m] || 0) + v;
+            });
+        });
+        return out;
+    }
 
-        <!-- Notes -->
-        ${session.notes ? `
-        <div class="px-5 py-3 border-b border-white/5">
-          <p class="text-xs text-white/30 uppercase tracking-widest mb-1">Notes</p>
-          <p class="text-sm text-white/60 italic">"${esc(session.notes)}"</p>
-        </div>` : ""}
+    function computeWeeklyVolume(finished) {
+        // Bucket per ISO-week, last 8
+        const buckets = {};
+        finished.forEach((s) => {
+            const d = new Date(s.startedAt);
+            const onejan = new Date(d.getFullYear(), 0, 1);
+            const week = Math.ceil(((d - onejan) / 86400000 + onejan.getDay() + 1) / 7);
+            const key = `${d.getFullYear()}-${String(week).padStart(2, "0")}`;
+            buckets[key] = (buckets[key] || 0) + sessionVolume(s);
+        });
+        return Object.entries(buckets)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .slice(-8)
+            .map(([k, v]) => ({ label: k.split("-")[1], volume: v }));
+    }
 
-        <!-- Exercise detail -->
-        <div class="divide-y divide-white/5 max-h-[calc(100vh-380px)] overflow-y-auto">
-          ${(session.exercises ?? []).map((ex) => `
-            <div class="px-5 py-4">
-              <p class="text-sm font-semibold text-white/90 mb-2">${esc(ex.exerciseNameSnapshot)}</p>
-              ${ex.sets?.length > 0 ? `
-                <div class="space-y-1">
-                  <div class="grid grid-cols-3 text-xs text-white/30 mb-1">
-                    <span>Set</span><span>KG</span><span>Reps</span>
-                  </div>
-                  ${ex.sets.map((set) => `
-                    <div class="grid grid-cols-3 text-xs text-white/60 py-1 border-b border-white/5 last:border-0">
-                      <span>${esc(set.setNumber)}</span>
-                      <span>${esc(set.weightKg)} kg</span>
-                      <span>${esc(set.reps)} reps</span>
-                    </div>
-                  `).join("")}
+    /* =====================================================
+       RENDER — hero, charts, PRs
+       ===================================================== */
+    function renderAll() {
+        $("loadingState").style.display = "none";
+
+        if (state.finished.length === 0) {
+            $("emptyState").style.display = "";
+            return;
+        }
+
+        $("dataView").style.display = "";
+
+        const totalVolume = state.finished.reduce((a, s) => a + sessionVolume(s), 0);
+        const totalSets = state.finished.reduce((a, s) => a + sessionSets(s), 0);
+        const totalReps = state.finished.reduce((a, s) => a + sessionReps(s), 0);
+        const totalMin = state.finished.reduce((a, s) => a + durationMin(s), 0);
+        const prs = computePRs(state.finished);
+        const muscleSplit = computeMuscleSplit(state.finished);
+        const weekly = computeWeeklyVolume(state.finished);
+
+        // Hero
+        $("statVolumeMain").textContent = (totalVolume / 1000).toFixed(1);
+        $("statSessions").textContent = fmtNum(state.finished.length);
+        $("statSessionsSub").textContent = `${(totalMin / 60).toFixed(1)} jam total`;
+        $("statSets").textContent = fmtNum(totalSets);
+        $("statSetsSub").textContent = `${fmtNum(totalReps)} reps`;
+        $("statPRs").textContent = fmtNum(prs.length);
+
+        // Sparkline: last 8 finished sessions
+        const lastVolumes = state.finished.slice(0, 8).reverse().map(sessionVolume);
+        renderSparkline(lastVolumes);
+
+        // Bar chart
+        renderBarChart(weekly);
+
+        // Donut
+        renderDonut(muscleSplit);
+
+        // PRs
+        renderPRs(prs.slice(0, 5));
+
+        // Session list
+        $("sessionCount").textContent = `${state.finished.length} total`;
+        renderSessionList();
+
+        // Auto-select first session
+        if (!state.selectedId && state.finished.length > 0) {
+            state.selectedId = state.finished[0].id;
+        }
+        renderDetail();
+    }
+
+    function renderSparkline(data) {
+        if (!data.length) return;
+        const width = 200, height = 36;
+        const max = Math.max(...data);
+        const min = Math.min(...data);
+        const range = max - min || 1;
+        const step = width / (data.length - 1 || 1);
+        const points = data.map((v, i) => [i * step, height - ((v - min) / range) * height]);
+        const path = points.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+        const area = `${path} L${width},${height} L0,${height} Z`;
+        $("sparkContainer").innerHTML = `
+            <svg width="${width}" height="${height}" class="sparkline">
+                <path d="${area}" fill="var(--accent)" opacity="0.12"/>
+                <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+    }
+
+    function renderBarChart(data) {
+        if (!data.length) { $("barChart").innerHTML = `<div class="dim small" style="padding:24px">Belum cukup data untuk chart.</div>`; return; }
+        const max = Math.max(...data.map((d) => d.volume)) || 1;
+        $("barChart").innerHTML = data.map((d) => {
+            const h = (d.volume / max) * 100;
+            return `
+                <div class="bar-wrap">
+                    <div class="bar-tip">${(d.volume / 1000).toFixed(1)}k</div>
+                    <div class="bar" style="height:${h}%"></div>
+                    <div class="bar-label">W${esc(d.label)}</div>
                 </div>
-              ` : `<p class="text-xs text-white/20">Tidak ada set.</p>`}
+            `;
+        }).join("");
+    }
+
+    function renderDonut(data) {
+        const total = Object.values(data).reduce((a, b) => a + b, 0);
+        if (!total) { $("donutWrap").innerHTML = `<div class="dim small">Belum ada data.</div>`; return; }
+
+        const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+        const size = 180, cx = size / 2, cy = size / 2, r = size / 2 - 14;
+        const C = 2 * Math.PI * r;
+        const colors = {
+            chest: "var(--m-chest)", back: "var(--m-back)", shoulders: "var(--m-shoulders)",
+            biceps: "var(--m-biceps)", triceps: "var(--m-triceps)", quad: "var(--m-quad)",
+            hamstring: "var(--m-hamstring)", core: "var(--m-core)",
+        };
+
+        let offset = 0;
+        const arcs = entries.map(([k, v]) => {
+            const frac = v / total;
+            const len = frac * C;
+            const arc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[k] || "var(--accent)"}" stroke-width="14" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+            offset += len;
+            return arc;
+        }).join("");
+
+        const legend = entries.map(([k, v]) => `
+            <li>
+                <span class="legend-dot" style="background:${colors[k] || "var(--accent)"}"></span>
+                <span class="legend-name">${esc(k)}</span>
+                <span class="legend-val">${Math.round((v / total) * 100)}%</span>
+            </li>
+        `).join("");
+
+        $("donutWrap").innerHTML = `
+            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14"/>
+                ${arcs}
+                <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="donut-num">${(total / 1000).toFixed(0)}k</text>
+                <text x="${cx}" y="${cy + 14}" text-anchor="middle" class="donut-cap">KG VOLUME</text>
+            </svg>
+            <ul class="donut-legend">${legend}</ul>
+        `;
+    }
+
+    function renderPRs(prs) {
+        if (!prs.length) { $("prList").innerHTML = `<div class="dim small" style="padding:8px">Belum ada PR.</div>`; return; }
+        $("prList").innerHTML = prs.map((pr, i) => `
+            <div class="pr-item">
+                <div class="pr-rank">#${String(i + 1).padStart(2, "0")}</div>
+                <div class="pr-info">
+                    <div class="pr-name">${esc(pr.name)}</div>
+                    <div class="pr-meta">
+                        <span class="muscle-dot" data-muscle="${esc(pr.muscleGroup || "")}"></span>
+                        <span>${esc(pr.muscleGroup || "")}</span>
+                    </div>
+                </div>
+                <div class="pr-num">
+                    <span class="mono">${esc(pr.weightKg)}</span>
+                    <span class="dim small"> × ${esc(pr.reps)}</span>
+                </div>
             </div>
-          `).join("")}
-        </div>
-      `;
+        `).join("");
     }
 
-    // helper
-
-    function esc(v) {
-      return String(v ?? "")
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function renderSessionList() {
+        const total = state.finished.length;
+        $("sessionCards").innerHTML = state.finished.map((s, i) => {
+            const sets = sessionSets(s);
+            const dur = durationMin(s);
+            const tags = (s.exercises || []).slice(0, 3).map((ex) => `
+                <span class="hist-tag">
+                    <span class="muscle-dot" data-muscle="${esc(ex.muscleGroup || "")}"></span>
+                    ${esc(ex.exerciseNameSnapshot)}
+                </span>
+            `).join("");
+            const more = s.exercises?.length > 3 ? `<span class="hist-tag-more">+${s.exercises.length - 3}</span>` : "";
+            return `
+                <button class="hist-card ${state.selectedId === s.id ? "is-selected" : ""}" data-session-id="${esc(s.id)}">
+                    <div class="hist-card-num">${String(total - i).padStart(2, "0")}</div>
+                    <div class="hist-card-info">
+                        <div class="hist-card-name">Sesi #${esc(s.id)}</div>
+                        <div class="hist-card-date">${esc(fmtDate(s.startedAt))}</div>
+                        <div class="hist-card-tags">${tags}${more}</div>
+                    </div>
+                    <div class="hist-card-stats">
+                        <div class="hist-stat">
+                            <div class="mono lg">${dur}</div>
+                            <div class="dim micro">MIN</div>
+                        </div>
+                        <div class="hist-stat">
+                            <div class="mono lg">${sets}</div>
+                            <div class="dim micro">SETS</div>
+                        </div>
+                    </div>
+                </button>
+            `;
+        }).join("");
     }
 
-    // init
+    function renderDetail() {
+        const s = state.finished.find((x) => x.id === state.selectedId);
+        if (!s) {
+            $("detailPanel").innerHTML = `
+                <div class="empty-state" style="border:none;background:transparent;padding:48px 24px">
+                    <div class="empty-mark"><span></span><span></span><span></span></div>
+                    <div class="empty-title">Pilih sesi</div>
+                    <div class="empty-sub">Klik card di kiri untuk lihat detail.</div>
+                </div>
+            `;
+            return;
+        }
 
+        const dur = durationMin(s);
+        const sets = sessionSets(s);
+        const vol = sessionVolume(s);
+
+        const exHtml = (s.exercises || []).map((ex) => {
+            const setsHtml = (ex.sets || []).map((st) => `
+                <div class="sd-set">
+                    <span class="dim micro">#${esc(st.setNumber)}</span>
+                    <span class="mono">${esc(st.weightKg || "–")}<span class="dim small">kg</span></span>
+                    <span class="dim">×</span>
+                    <span class="mono">${esc(st.reps || "–")}</span>
+                </div>
+            `).join("");
+            return `
+                <div class="sd-ex">
+                    <div class="sd-ex-head">
+                        <span class="muscle-dot" data-muscle="${esc(ex.muscleGroup || "")}"></span>
+                        <span class="sd-ex-name">${esc(ex.exerciseNameSnapshot)}</span>
+                        <span class="dim small ml-auto">${ex.sets?.length || 0} set</span>
+                    </div>
+                    <div class="sd-sets">${setsHtml}</div>
+                </div>
+            `;
+        }).join("");
+
+        $("detailPanel").innerHTML = `
+            <div class="session-detail">
+                <div class="sd-head">
+                    <div class="eyebrow">Session Detail</div>
+                    <h2 class="sd-title">Sesi #${esc(s.id)}</h2>
+                    <div class="sd-meta">
+                        <span>${esc(fmtDate(s.startedAt, { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}</span>
+                        <span class="dim">·</span>
+                        <span>${esc(fmtTime(s.startedAt))}</span>
+                    </div>
+                </div>
+                <div class="sd-stats">
+                    <div>
+                        <div class="dim micro">DURATION</div>
+                        <div class="mono lg">${dur}<span class="dim small"> min</span></div>
+                    </div>
+                    <div>
+                        <div class="dim micro">EXERCISES</div>
+                        <div class="mono lg">${s.exercises?.length || 0}</div>
+                    </div>
+                    <div>
+                        <div class="dim micro">SETS</div>
+                        <div class="mono lg">${sets}</div>
+                    </div>
+                    <div>
+                        <div class="dim micro">VOLUME</div>
+                        <div class="mono lg">${fmtNum(vol)}<span class="dim small"> kg</span></div>
+                    </div>
+                </div>
+                ${s.notes ? `
+                    <div class="sd-notes">
+                        <div class="eyebrow">Notes</div>
+                        <p>"${esc(s.notes)}"</p>
+                    </div>
+                ` : ""}
+                <div class="sd-exercises">${exHtml}</div>
+            </div>
+        `;
+    }
+
+    /* =====================================================
+       EVENTS
+       ===================================================== */
+    $("sessionCards").addEventListener("click", (e) => {
+        const card = e.target.closest("[data-session-id]");
+        if (!card) return;
+        state.selectedId = Number(card.dataset.sessionId);
+        renderSessionList();
+        renderDetail();
+    });
+
+    /* =====================================================
+       INIT
+       ===================================================== */
     (async () => {
-      const res = await fetch("/api/auth/me");
-      if (!res.ok) { window.location.href = "/login.html"; return; }
-      const user = await res.json();
-      userId = user.id;
-      $("usernameLabel").textContent = user.username;
-      await loadHistory();
+        if (!(await initAuth())) return;
+        await loadHistory();
     })();
 </script>
 
