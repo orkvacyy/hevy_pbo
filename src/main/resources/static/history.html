@@ -171,7 +171,10 @@
         <div class="flex items-start justify-between mb-3">
           <div>
             <p class="text-sm font-semibold text-white/90">
-              ${esc(started.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}
+              ${session.notes ? esc(session.notes) : esc(started.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}
+            </p>
+            <p class="text-xs text-white/30 mt-0.5">
+              ${session.notes ? esc(started.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })) : esc(started.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }))}
             </p>
             <p class="text-xs text-white/30 mt-0.5">${esc(started.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }))}</p>
           </div>
@@ -259,23 +262,20 @@
         .replace(/'/g, "&#039;");
     }
 
-// init
-
+    // init
     (async () => {
-      const res = await fetch("/api/auth/me");
-      if (!res.ok) { window.location.href = "/login.html"; return; }
-      const user = await res.json();
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) { window.location.href = "/login.html"; return; }
+        const user = await res.json();
 
-      if (user.role === "admin") {
-        const adminLink = document.getElementById("adminLink");
-        if (adminLink) adminLink.classList.remove("hidden");
-      }
+        if (user.role === "admin") {
+            const adminLink = document.getElementById("adminLink");
+            if (adminLink) adminLink.classList.remove("hidden");
+        }
 
-      state.userId = user.id;
-      $("userIdInput").value = user.id;
-      $("usernameLabel").textContent = user.username;
-      await loadLibrary();
-      await loadActiveSession();
+        userId = user.id;
+        $("usernameLabel").textContent = user.username;
+        await loadHistory();
     })();
 </script>
 
