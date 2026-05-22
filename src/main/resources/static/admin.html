@@ -232,8 +232,6 @@
       await fetch("/api/auth/logout", { method: "POST" });
       window.location.href = "/login.html";
     }
-
-
     function switchTab(tab) {
       activeTab = tab;
       $("panelUsers").classList.toggle("hidden", tab !== "users");
@@ -246,6 +244,7 @@
       $("tabExercises").classList.toggle("text-white/40", tab !== "exercises");
     }
 
+    // load data
 
     async function loadUsers() {
       try {
@@ -270,6 +269,7 @@
       }
     }
 
+    // render
 
     function renderUsers() {
       const active = users.filter((u) => u.role !== "admin" && u.active !== false);
@@ -343,7 +343,7 @@
       });
     }
 
-    // user action
+    // u.action
 
     async function toggleUser(userId, currentlyActive) {
       const endpoint = currentlyActive ? "deactivate" : "activate";
@@ -393,7 +393,7 @@
       }
     }
 
-    // exercise action
+    // exec.action
 
     function openExerciseModal() {
       $("exerciseModalTitle").textContent = "Tambah Exercise Global";
