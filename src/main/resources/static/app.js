@@ -62,16 +62,6 @@ async function submitCustomExercise() {
     }
 }
 
-async function hardDeleteUser(userId, username) {
-    if (!confirm(`Hapus permanen akun "${username}"? Semua data workout milik user ini akan ikut terhapus.`)) return;
-    try {
-        const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error();
-        await loadUsers();
-    } catch {
-        alert("Gagal menghapus user.");
-    }
-}
 
 async function deleteExercise(exerciseId) {
     if (!confirm("Hapus exercise ini?")) return;

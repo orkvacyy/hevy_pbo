@@ -59,6 +59,7 @@
         .ops-badge-inactive { background: rgba(234,179,8,0.12); color: #eab308; }
         .ops-badge-strength { background: rgba(230,57,70,0.12); color: #e63946; }
         .ops-badge-cardio   { background: rgba(76,201,240,0.1); color: #4cc9f0; }
+        .ops-badge-custom   { background: rgba(168,85,247,0.12); color: #a855f7; }
 
         /* action buttons */
         .action-btn {
@@ -220,14 +221,46 @@
     <!-- Exercise management panel -->
     <section id="panelExercises" class="hidden px-8 pt-6 pb-8">
         <div class="flex items-center justify-between mb-4">
-            <p class="text-sm text-white/50">Kelola exercise global yang tersedia untuk semua user.</p>
+            <p class="text-sm text-white/50">Kelola exercise global dan custom user.</p>
             <button onclick="openExerciseModal()" class="add-btn">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Tambah Exercise
+                Tambah Exercise Global
             </button>
         </div>
+
+        <!-- Search & filter bar -->
+        <div class="flex items-center gap-3 mb-4">
+            <div class="relative flex-1 max-w-xs">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:rgba(255,255,255,0.3);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input id="exSearch" type="search" placeholder="Cari exercise..."
+                       class="w-full pl-8 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+            </div>
+            <select id="exFilterScope" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <option value="">Semua Scope</option>
+                <option value="global">Global</option>
+                <option value="local">Custom User</option>
+            </select>
+            <select id="exFilterMuscle" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <option value="">Semua Muscle</option>
+                <option value="chest">Chest</option>
+                <option value="back">Back</option>
+                <option value="shoulders">Shoulders</option>
+                <option value="biceps">Biceps</option>
+                <option value="triceps">Triceps</option>
+                <option value="quad">Quad</option>
+                <option value="hamstring">Hamstring</option>
+                <option value="core">Core</option>
+                <option value="other">Other</option>
+            </select>
+            <select id="exFilterCategory" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <option value="">Semua Kategori</option>
+                <option value="strength">Strength</option>
+                <option value="cardio">Cardio</option>
+            </select>
+        </div>
+
         <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
-            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30 mono" id="exStatusMsg">Memuat exercise global...</div>
+            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30 mono" id="exStatusMsg">Memuat exercise...</div>
             <div class="overflow-x-auto">
                 <table class="data-table">
                     <thead>
@@ -408,27 +441,32 @@
       users.forEach((user) => {
         const isAdmin  = user.role === "admin";
         const isActive = user.active !== false;
+
+        // bangun kolom aksi terpisah biar aman dari nested template literal
+        let aksiHtml;
+        if (isAdmin) {
+          aksiHtml = '<span class="mono" style="font-size:10px; color:rgba(255,255,255,0.15);">—</span>';
+        } else {
+          aksiHtml = '<div style="display:flex; gap:8px;">'
+            + '<button class="action-btn ' + (isActive ? "red" : "") + '" data-toggle-user="' + user.id + '" data-active="' + isActive + '">'
+            + (isActive ? "Deactivate" : "Activate")
+            + '</button>'
+            + '<button class="action-btn" data-reset-pw="' + user.id + '" data-username="' + esc(user.username) + '">'
+            + 'Reset PW'
+            + '</button>'
+            + '<button class="action-btn red" data-del-user="' + user.id + '">'
+            + 'Hapus'
+            + '</button>'
+            + '</div>';
+        }
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${esc(user.username)}</td>
           <td style="color:rgba(255,255,255,0.4);">${esc(user.email)}</td>
           <td><span class="ops-badge ${isAdmin ? "ops-badge-admin" : "ops-badge-user"}">${esc(user.role)}</span></td>
           <td><span class="ops-badge ${isActive ? "ops-badge-active" : "ops-badge-inactive"}">${isActive ? "Active" : "Inactive"}</span></td>
-          <td>
-            ${isAdmin ? `<span class="mono" style="font-size:10px; color:rgba(255,255,255,0.15);">—</span>` : `
-              <div style="display:flex; gap:8px;">
-                <button class="action-btn ${isActive ? "red" : ""}" onclick="toggleUser(${user.id}, ${isActive})">
-                  ${isActive ? "Deactivate" : "Activate"}
-                </button>
-                <button class="action-btn" onclick="openPasswordModal(${user.id}, '${esc(user.username)}')">
-                  Reset PW
-                </button>
-                <button class="action-btn red" onclick="hardDeleteUser(${user.id}, '${esc(user.username)}')">
-                  Hapus
-                </button>
-            </div>
-            `}
-          </td>
+          <td>${aksiHtml}</td>
         `;
         tbody.append(tr);
       });
@@ -437,31 +475,102 @@
     function renderExercises() {
       const tbody = $("exTableBody");
       tbody.innerHTML = "";
-      $("exStatusMsg").textContent = `${globalExercises.length} exercise global.`;
 
-      globalExercises.forEach((ex) => {
+      // ambil nilai filter & search
+      const keyword      = ($("exSearch")      ? $("exSearch").value.toLowerCase()      : "");
+      const filterScope    = ($("exFilterScope")   ? $("exFilterScope").value    : "");
+      const filterMuscle   = ($("exFilterMuscle")  ? $("exFilterMuscle").value   : "");
+      const filterCategory = ($("exFilterCategory")? $("exFilterCategory").value : "");
+
+      const filtered = allExercises.filter((ex) => {
+        const matchSearch   = !keyword      || ex.name.toLowerCase().includes(keyword);
+        const matchScope    = !filterScope    || ex.scope === filterScope;
+        const matchMuscle   = !filterMuscle   || ex.muscleGroup === filterMuscle;
+        const matchCategory = !filterCategory || ex.category === filterCategory;
+        return matchSearch && matchScope && matchMuscle && matchCategory;
+      });
+
+      const customCount = allExercises.filter((e) => e.scope === "local").length;
+      $("exStatusMsg").textContent = globalExercises.length + " global · " + customCount + " custom · " + filtered.length + " ditampilkan.";
+
+      filtered.forEach((ex) => {
+        const isLocal = ex.scope === "local";
+
+        // nama + label custom kalau local
+        const namaHtml = isLocal
+          ? esc(ex.name) + ' <span class="ops-badge ops-badge-custom">custom</span>'
+          : esc(ex.name);
+
+        // aksi — local hanya hapus, global bisa edit + hapus
+        let aksiHtml;
+        if (isLocal) {
+          aksiHtml = '<button class="action-btn red" data-del-ex="' + ex.id + '">Hapus</button>';
+        } else {
+          aksiHtml = '<div style="display:flex; gap:8px;">'
+            + '<button class="action-btn" data-edit-ex="' + ex.id + '"'
+            + ' data-name="' + esc(ex.name) + '" data-category="' + esc(ex.category) + '"'
+            + ' data-muscle="' + esc(ex.muscleGroup) + '" data-equipment="' + esc(ex.equipment) + '">Edit</button>'
+            + '<button class="action-btn red" data-del-ex="' + ex.id + '">Hapus</button>'
+            + '</div>';
+        }
+
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${esc(ex.name)}</td>
-          <td><span class="ops-badge ops-badge-${esc(ex.category)}">${esc(ex.category)}</span></td>
-          <td style="color:rgba(255,255,255,0.4);">${esc(ex.muscleGroup)}</td>
-          <td style="color:rgba(255,255,255,0.4);">${esc(ex.equipment)}</td>
-          <td>
-            <div style="display:flex; gap:8px;">
-              <button class="action-btn" onclick="openEditExercise(${ex.id}, '${esc(ex.name)}', '${esc(ex.category)}', '${esc(ex.muscleGroup)}', '${esc(ex.equipment)}')">
-                Edit
-              </button>
-              <button class="action-btn red" onclick="deleteGlobalExercise(${ex.id}, '${esc(ex.name)}')">
-                Hapus
-              </button>
-            </div>
-          </td>
-        `;
+        tr.innerHTML =
+          "<td>" + namaHtml + "</td>"
+          + "<td><span class=\"ops-badge ops-badge-" + esc(ex.category) + "\">" + esc(ex.category) + "</span></td>"
+          + "<td style=\"color:rgba(255,255,255,0.4);\">" + esc(ex.muscleGroup) + "</td>"
+          + "<td style=\"color:rgba(255,255,255,0.4);\">" + esc(ex.equipment) + "</td>"
+          + "<td>" + aksiHtml + "</td>";
         tbody.append(tr);
       });
     }
 
-    // u.action
+    // u.action — delegasi klik tabel user
+
+    $("userTableBody") && document.addEventListener("click", (e) => {
+      // toggle deactivate/activate
+      const toggleBtn = e.target.closest("[data-toggle-user]");
+      if (toggleBtn) {
+        const userId       = Number(toggleBtn.dataset.toggleUser);
+        const currentlyActive = toggleBtn.dataset.active === "true";
+        toggleUser(userId, currentlyActive);
+        return;
+      }
+
+      // reset password
+      const resetBtn = e.target.closest("[data-reset-pw]");
+      if (resetBtn) {
+        openPasswordModal(Number(resetBtn.dataset.resetPw), resetBtn.dataset.username);
+        return;
+      }
+
+      // hard delete user
+      const delUserBtn = e.target.closest("[data-del-user]");
+      if (delUserBtn) {
+        hardDeleteUser(Number(delUserBtn.dataset.delUser));
+        return;
+      }
+
+      // edit exercise
+      const editExBtn = e.target.closest("[data-edit-ex]");
+      if (editExBtn) {
+        openEditExercise(
+          editExBtn.dataset.editEx,
+          editExBtn.dataset.name,
+          editExBtn.dataset.category,
+          editExBtn.dataset.muscle,
+          editExBtn.dataset.equipment
+        );
+        return;
+      }
+
+      // hapus exercise
+      const delExBtn = e.target.closest("[data-del-ex]");
+      if (delExBtn) {
+        deleteGlobalExercise(Number(delExBtn.dataset.delEx));
+        return;
+      }
+    });
 
     async function toggleUser(userId, currentlyActive) {
       const endpoint = currentlyActive ? "deactivate" : "activate";
@@ -471,6 +580,17 @@
         await loadUsers();
       } catch {
         alert("Gagal mengubah status user.");
+      }
+    }
+
+    async function hardDeleteUser(userId) {
+      if (!confirm("Hapus permanen akun ini? Semua data workout milik user ini akan ikut terhapus.")) return;
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error();
+        await loadUsers();
+      } catch {
+        alert("Gagal menghapus user.");
       }
     }
 
@@ -569,8 +689,8 @@
       }
     }
 
-    async function deleteGlobalExercise(id, name) {
-      if (!confirm(`Hapus exercise "${name}"? Exercise yang sudah dipakai di history tetap aman.`)) return;
+    async function deleteGlobalExercise(id) {
+      if (!confirm("Hapus exercise ini? Exercise yang sudah dipakai di history tetap aman.")) return;
       try {
         const res = await fetch(`/api/admin/exercises/${id}`, { method: "DELETE" });
         if (!res.ok) throw new Error();
@@ -588,6 +708,14 @@
         .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+
+    // search & filter exercise
+    document.addEventListener("input", (e) => {
+      if (e.target.id === "exSearch") renderExercises();
+    });
+    document.addEventListener("change", (e) => {
+      if (["exFilterScope", "exFilterMuscle", "exFilterCategory"].includes(e.target.id)) renderExercises();
+    });
 
     // init
 
