@@ -10,6 +10,7 @@ import com.hevy.hevy.repository.UserDao;
 import com.hevy.hevy.repository.WorkoutExerciseDao;
 import com.hevy.hevy.repository.WorkoutSessionDao;
 import com.hevy.hevy.repository.WorkoutSetDao;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -22,11 +23,11 @@ public class WorkoutService {
     private final WorkoutSetDao workoutSetDao;
 
     public WorkoutService() {
-        this.exerciseDao = new ExerciseDao();
-        this.userDao = new UserDao();
-        this.sessionDao = new WorkoutSessionDao();
+        this.exerciseDao       = new ExerciseDao();
+        this.userDao           = new UserDao();
+        this.sessionDao        = new WorkoutSessionDao();
         this.workoutExerciseDao = new WorkoutExerciseDao();
-        this.workoutSetDao = new WorkoutSetDao();
+        this.workoutSetDao     = new WorkoutSetDao();
     }
 
     public WorkoutSession startSession(Long userId) {
@@ -35,7 +36,6 @@ public class WorkoutService {
         if (activeSession.isPresent()) {
             return activeSession.get();
         }
-
         WorkoutSession session = new WorkoutSession(userId);
         session.start();
         sessionDao.save(session);
@@ -87,17 +87,28 @@ public class WorkoutService {
 
     public WorkoutSet addSet(Long userId, Long workoutExerciseId, double weightKg, int reps) {
         validateActiveUser(userId);
-
-        // memastikan workout exercise ini milik user yang benar
         WorkoutExercise we = workoutExerciseDao.findById(workoutExerciseId)
                 .orElseThrow(() -> new IllegalArgumentException("Workout exercise tidak ditemukan"));
         findOwnedSession(userId, we.getSessionId());
 
-        // set number = jumlah set yang sudah ada + 1
         List<WorkoutSet> existing = workoutSetDao.findByWorkoutExerciseId(workoutExerciseId);
         int setNumber = existing.size() + 1;
 
         WorkoutSet set = new WorkoutSet(workoutExerciseId, setNumber, weightKg, reps);
+        workoutSetDao.save(set);
+        return set;
+    }
+
+    public WorkoutSet addCardioSet(Long userId, Long workoutExerciseId, double durationMinutes, double distanceKm) {
+        validateActiveUser(userId);
+        WorkoutExercise we = workoutExerciseDao.findById(workoutExerciseId)
+                .orElseThrow(() -> new IllegalArgumentException("Workout exercise tidak ditemukan"));
+        findOwnedSession(userId, we.getSessionId());
+
+        List<WorkoutSet> existing = workoutSetDao.findByWorkoutExerciseId(workoutExerciseId);
+        int setNumber = existing.size() + 1;
+
+        WorkoutSet set = new WorkoutSet(workoutExerciseId, setNumber, durationMinutes, distanceKm, true);
         workoutSetDao.save(set);
         return set;
     }
@@ -125,9 +136,7 @@ public class WorkoutService {
     }
 
     private void ensureExerciseAccessible(Long userId, BaseExercise exercise) {
-        if (exercise.isGlobal()) {
-            return;
-        }
+        if (exercise.isGlobal()) return;
         if (!exercise.getOwnerId().equals(userId)) {
             throw new SecurityException("User tidak boleh memilih exercise milik user lain");
         }

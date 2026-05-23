@@ -23,10 +23,22 @@
           transition: border-color 0.15s;
         }
         .input-field:focus { border-color: rgba(230,57,70,0.6); }
+        .input-field.input-error { border-color: rgba(230,57,70,0.8); }
+        .input-field.input-ok { border-color: rgba(34,197,94,0.5); }
         .input-field::placeholder { color: rgba(255,255,255,0.25); }
         .tab-active { color: #fff; border-bottom: 2px solid #e63946; }
         .tab-inactive { color: rgba(255,255,255,0.35); border-bottom: 2px solid transparent; }
         .error-msg { color: #e63946; font-size: 12px; min-height: 18px; }
+        /* Password strength indicator */
+        .strength-bar {
+          height: 3px;
+          border-radius: 2px;
+          transition: all 0.3s;
+          background: rgba(255,255,255,0.08);
+        }
+        .strength-weak   { background: #e63946; width: 33%; }
+        .strength-medium { background: #eab308; width: 66%; }
+        .strength-strong { background: #22c55e; width: 100%; }
     </style>
 </head>
 <body class="bg-[#0f0f0f] text-white min-h-screen flex items-center justify-center">
@@ -59,11 +71,14 @@
         <div id="formLogin" class="p-6 space-y-4">
             <div>
                 <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Email</label>
-                <input id="loginEmail" type="email" placeholder="kamu@email.com" class="input-field">
+                <input id="loginEmail" type="email" placeholder="kamu@email.com"
+                       class="input-field" oninput="validateLoginEmail()">
+                <p id="loginEmailErr" class="error-msg mt-1"></p>
             </div>
             <div>
                 <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Password</label>
                 <input id="loginPassword" type="password" placeholder="••••••••" class="input-field">
+                <p id="loginPasswordErr" class="error-msg mt-1"></p>
             </div>
             <p id="loginError" class="error-msg"></p>
             <button onclick="handleLogin()"
@@ -76,15 +91,24 @@
         <div id="formRegister" class="p-6 space-y-4 hidden">
             <div>
                 <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Username</label>
-                <input id="regUsername" type="text" placeholder="username" class="input-field">
+                <input id="regUsername" type="text" placeholder="username" class="input-field"
+                       oninput="clearFieldErr('regUsernameErr', this)">
+                <p id="regUsernameErr" class="error-msg mt-1"></p>
             </div>
             <div>
                 <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Email</label>
-                <input id="regEmail" type="email" placeholder="kamu@email.com" class="input-field">
+                <input id="regEmail" type="email" placeholder="kamu@email.com"
+                       class="input-field" oninput="validateRegEmail()">
+                <p id="regEmailErr" class="error-msg mt-1"></p>
             </div>
             <div>
                 <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Password</label>
-                <input id="regPassword" type="password" placeholder="••••••••" class="input-field">
+                <input id="regPassword" type="password" placeholder="Min. 6 karakter, angka & simbol"
+                       class="input-field" oninput="validateRegPassword()">
+                <!-- Password strength bar -->
+                <div class="mt-2 strength-bar" id="strengthBar"></div>
+                <p id="strengthLabel" class="text-xs text-white/30 mt-1"></p>
+                <p id="regPasswordErr" class="error-msg mt-1"></p>
             </div>
             <p id="registerError" class="error-msg"></p>
             <button onclick="handleRegister()"
@@ -94,31 +118,149 @@
         </div>
 
     </div>
+
+    <!-- Hint password rule -->
+    <p id="regPasswordHint" class="hidden text-center text-xs text-white/25 mt-3">
+        Password harus min. 6 karakter, mengandung angka dan simbol (contoh: Abc@123)
+    </p>
 </div>
 
 <script>
-    // redirect ke dashboard kalau sudah login
-    async function checkSession() {
-      const res = await fetch("/api/auth/me");
-      if (res.ok) window.location.href = "/";
+    // validation
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    // minimal 6 karakter, ada angka, ada simbol
+    const PASSWORD_RE = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])/;
+
+    function isValidEmail(email) {
+      return EMAIL_RE.test(email.trim());
     }
-    checkSession();
+
+    function isValidPassword(pw) {
+      if (pw.length < 6) return false;
+      return PASSWORD_RE.test(pw);
+    }
+
+    function passwordStrength(pw) {
+      if (pw.length === 0) return 0;
+      const hasNum    = /[0-9]/.test(pw);
+      const hasSym    = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw);
+      const hasUpper  = /[A-Z]/.test(pw);
+      const longEnough = pw.length >= 6;
+
+      if (longEnough && hasNum && hasSym && hasUpper) return 3; // strong
+      if (longEnough && (hasNum || hasSym)) return 2;           // medium
+      return 1;                                                  // weak
+    }
+
+    function setFieldState(inputEl, errEl, msg) {
+      if (msg) {
+        inputEl.classList.add("input-error");
+        inputEl.classList.remove("input-ok");
+        errEl.textContent = msg;
+      } else {
+        inputEl.classList.remove("input-error");
+        inputEl.classList.add("input-ok");
+        errEl.textContent = "";
+      }
+    }
+
+    function clearFieldErr(errId, inputEl) {
+      document.getElementById(errId).textContent = "";
+      inputEl.classList.remove("input-error");
+    }
+
+    // ── Real-time validation ──────────────────────────────────────────────────
+
+    function validateLoginEmail() {
+      const el  = document.getElementById("loginEmail");
+      const err = document.getElementById("loginEmailErr");
+      if (!el.value) { err.textContent = ""; el.classList.remove("input-error","input-ok"); return; }
+      setFieldState(el, err, isValidEmail(el.value) ? "" : "Format email tidak valid (contoh: nama@domain.com)");
+    }
+
+    function validateRegEmail() {
+      const el  = document.getElementById("regEmail");
+      const err = document.getElementById("regEmailErr");
+      if (!el.value) { err.textContent = ""; el.classList.remove("input-error","input-ok"); return; }
+      setFieldState(el, err, isValidEmail(el.value) ? "" : "Format email tidak valid (contoh: nama@domain.com)");
+    }
+
+    function validateRegPassword() {
+      const el    = document.getElementById("regPassword");
+      const err   = document.getElementById("regPasswordErr");
+      const bar   = document.getElementById("strengthBar");
+      const label = document.getElementById("strengthLabel");
+      const hint  = document.getElementById("regPasswordHint");
+      const pw    = el.value;
+
+      hint.classList.remove("hidden");
+
+      if (!pw) {
+        err.textContent = "";
+        el.classList.remove("input-error","input-ok");
+        bar.className   = "strength-bar";
+        bar.style.width = "0";
+        label.textContent = "";
+        return;
+      }
+
+      const s = passwordStrength(pw);
+
+      bar.className = "strength-bar " + (s === 3 ? "strength-strong" : s === 2 ? "strength-medium" : "strength-weak");
+      label.textContent = s === 3 ? "Kuat" : s === 2 ? "Cukup" : "Lemah";
+      label.style.color = s === 3 ? "#22c55e" : s === 2 ? "#eab308" : "#e63946";
+
+      if (!isValidPassword(pw)) {
+        let msg = "";
+        if (pw.length < 6)            msg = "Password minimal 6 karakter.";
+        else if (!/[0-9]/.test(pw))   msg = "Password harus mengandung minimal 1 angka.";
+        else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw)) msg = "Password harus mengandung minimal 1 simbol (contoh: @, #, !).";
+        setFieldState(el, err, msg);
+      } else {
+        setFieldState(el, err, "");
+      }
+    }
+
 
     function switchTab(tab) {
       const isLogin = tab === "login";
       document.getElementById("formLogin").classList.toggle("hidden", !isLogin);
       document.getElementById("formRegister").classList.toggle("hidden", isLogin);
-      document.getElementById("tabLogin").className    = `flex-1 py-4 text-sm font-semibold transition-all ${isLogin ? "tab-active" : "tab-inactive"}`;
-      document.getElementById("tabRegister").className = `flex-1 py-4 text-sm font-semibold transition-all ${!isLogin ? "tab-active" : "tab-inactive"}`;
+      document.getElementById("regPasswordHint").classList.add("hidden");
+      document.getElementById("tabLogin").className    = "flex-1 py-4 text-sm font-semibold transition-all " + (isLogin ? "tab-active" : "tab-inactive");
+      document.getElementById("tabRegister").className = "flex-1 py-4 text-sm font-semibold transition-all " + (!isLogin ? "tab-active" : "tab-inactive");
     }
 
-    async function handleLogin() {
-      const email    = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-      const errEl    = document.getElementById("loginError");
-      errEl.textContent = "";
 
-      if (!email || !password) { errEl.textContent = "Email dan password wajib diisi."; return; }
+    async function handleLogin() {
+      const emailEl = document.getElementById("loginEmail");
+      const pwEl    = document.getElementById("loginPassword");
+      const errEl   = document.getElementById("loginError");
+      const emailErrEl = document.getElementById("loginEmailErr");
+      const pwErrEl    = document.getElementById("loginPasswordErr");
+
+      errEl.textContent    = "";
+      pwErrEl.textContent  = "";
+
+      const email    = emailEl.value.trim();
+      const password = pwEl.value;
+      let valid = true;
+
+      if (!email) {
+        setFieldState(emailEl, emailErrEl, "Email wajib diisi.");
+        valid = false;
+      } else if (!isValidEmail(email)) {
+        setFieldState(emailEl, emailErrEl, "Format email tidak valid (contoh: nama@domain.com)");
+        valid = false;
+      }
+
+      if (!password) {
+        pwErrEl.textContent = "Password wajib diisi.";
+        valid = false;
+      }
+
+      if (!valid) return;
 
       try {
         const res = await fetch("/api/auth/login", {
@@ -135,14 +277,50 @@
     }
 
     async function handleRegister() {
-      const username = document.getElementById("regUsername").value.trim();
-      const email    = document.getElementById("regEmail").value.trim();
-      const password = document.getElementById("regPassword").value;
-      const errEl    = document.getElementById("registerError");
-      errEl.textContent = "";
+      const usernameEl = document.getElementById("regUsername");
+      const emailEl    = document.getElementById("regEmail");
+      const pwEl       = document.getElementById("regPassword");
+      const errEl      = document.getElementById("registerError");
+      const usernameErrEl = document.getElementById("regUsernameErr");
+      const emailErrEl    = document.getElementById("regEmailErr");
+      const pwErrEl       = document.getElementById("regPasswordErr");
 
-      if (!username || !email || !password) { errEl.textContent = "Semua field wajib diisi."; return; }
-      if (password.length < 6) { errEl.textContent = "Password minimal 6 karakter."; return; }
+      errEl.textContent = "";
+      let valid = true;
+
+      const username = usernameEl.value.trim();
+      const email    = emailEl.value.trim();
+      const password = pwEl.value;
+
+      if (!username) {
+        setFieldState(usernameEl, usernameErrEl, "Username wajib diisi.");
+        valid = false;
+      } else {
+        clearFieldErr("regUsernameErr", usernameEl);
+        usernameEl.classList.add("input-ok");
+      }
+
+      if (!email) {
+        setFieldState(emailEl, emailErrEl, "Email wajib diisi.");
+        valid = false;
+      } else if (!isValidEmail(email)) {
+        setFieldState(emailEl, emailErrEl, "Format email tidak valid (contoh: nama@domain.com)");
+        valid = false;
+      }
+
+      if (!password) {
+        pwErrEl.textContent = "Password wajib diisi.";
+        valid = false;
+      } else if (!isValidPassword(password)) {
+        let msg = "";
+        if (password.length < 6)                   msg = "Password minimal 6 karakter.";
+        else if (!/[0-9]/.test(password))           msg = "Password harus mengandung minimal 1 angka.";
+        else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) msg = "Password harus mengandung minimal 1 simbol.";
+        setFieldState(pwEl, pwErrEl, msg);
+        valid = false;
+      }
+
+      if (!valid) return;
 
       try {
         const res = await fetch("/api/auth/register", {
@@ -158,7 +336,14 @@
       }
     }
 
-    // submit
+
+    async function checkSession() {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) window.location.href = "/";
+    }
+    checkSession();
+
+
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       const loginHidden = document.getElementById("formLogin").classList.contains("hidden");

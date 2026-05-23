@@ -67,7 +67,7 @@
     <!-- workout kiri, library kanan -->
     <section class="px-8 pt-6 pb-8 flex gap-6 flex-1 items-start">
 
-        <!-- Workout panel  -->
+        <!-- Workout panel -->
         <div class="flex-1 min-w-0 space-y-4">
 
             <!-- Status kosong -->
@@ -111,7 +111,6 @@
 
         <!-- Library panel -->
         <aside class="w-80 shrink-0 sticky top-24 space-y-3">
-
             <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
                 <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
                     <div>
@@ -145,7 +144,6 @@
                 <!-- Exercise list -->
                 <ul id="libList" class="divide-y divide-white/5 max-h-[calc(100vh-320px)] overflow-y-auto"></ul>
             </div>
-
         </aside>
     </section>
 
@@ -155,7 +153,8 @@
     const state = {
       userId: 1,
       session: null,
-      exercises: [],
+      exercises: [],       // library
+      exerciseMap: {},     // id->exercise (untuk cek kategori)
       timerInterval: null,
       startTime: null,
     };
@@ -175,8 +174,8 @@
         const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
         const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
         const ss = String(elapsed % 60).padStart(2, "0");
-        $("sessionTimer").textContent      = `${mm}:${ss}`;
-        $("sessionTimerPanel").textContent = `${mm}:${ss}`;
+        $("sessionTimer").textContent      = mm + ":" + ss;
+        $("sessionTimerPanel").textContent = mm + ":" + ss;
       }, 1000);
     }
 
@@ -190,15 +189,20 @@
 
     async function loadLibrary() {
       try {
-        const res = await fetch(`/api/exercises?userId=${state.userId}`);
+        const res = await fetch("/api/exercises?userId=" + state.userId);
         state.exercises = await res.json();
+        // build lookup map id -> exercise
+        state.exerciseMap = {};
+        state.exercises.forEach((ex) => { state.exerciseMap[ex.id] = ex; });
         renderLibrary();
-      } catch { $("libList").innerHTML = `<li class="px-5 py-4 text-xs text-white/30">Gagal memuat library.</li>`; }
+      } catch {
+        $("libList").innerHTML = '<li class="px-5 py-4 text-xs text-white/30">Gagal memuat library.</li>';
+      }
     }
 
     async function loadActiveSession() {
       try {
-        const res = await fetch(`/api/workouts/active?userId=${state.userId}`);
+        const res = await fetch("/api/workouts/active?userId=" + state.userId);
         if (res.status === 204) { state.session = null; renderWorkout(); return; }
         state.session = await res.json();
         renderWorkout();
@@ -217,7 +221,7 @@
     async function finishSession() {
       if (!state.session) return;
       try {
-        await postJson(`/api/workouts/${state.session.id}/finish`, {
+        await postJson("/api/workouts/" + state.session.id + "/finish", {
           userId: state.userId,
           notes: $("notesInput").value,
         });
@@ -231,7 +235,7 @@
     async function cancelSession() {
       if (!state.session || !confirm("Batalkan sesi ini?")) return;
       try {
-        await fetch(`/api/workouts/${state.session.id}?userId=${state.userId}`, { method: "DELETE" });
+        await fetch("/api/workouts/" + state.session.id + "?userId=" + state.userId, { method: "DELETE" });
         state.session = null;
         stopTimer();
         renderWorkout();
@@ -241,7 +245,7 @@
     async function addExercise(exerciseId) {
       if (!state.session) { alert("Mulai sesi dulu."); return; }
       try {
-        await postJson(`/api/workouts/${state.session.id}/exercises`, {
+        await postJson("/api/workouts/" + state.session.id + "/exercises", {
           userId: state.userId,
           exerciseId,
         });
@@ -249,32 +253,57 @@
       } catch (e) { alert(e.message); }
     }
 
-    async function addSet(workoutExerciseId) {
-      const weightEl = document.querySelector(`.set-weight[data-we="${workoutExerciseId}"]`);
-      const repsEl   = document.querySelector(`.set-reps[data-we="${workoutExerciseId}"]`);
-      const weightKg = parseFloat(weightEl?.value ?? 0);
-      const reps     = parseInt(repsEl?.value ?? 0);
+    async function addSet(workoutExerciseId, exerciseId) {
+      const ex = state.exerciseMap[exerciseId];
+      const isCardio = ex ? ex.category === "cardio" : false;
 
-      if (!reps || reps < 1) { alert("Reps wajib diisi."); return; }
-      if (weightKg <= 0)      { alert("Berat tidak boleh negatif."); return; }
+      if (isCardio) {
+        const durEl  = document.querySelector(".set-duration[data-we='" + workoutExerciseId + "']");
+        const distEl = document.querySelector(".set-distance[data-we='" + workoutExerciseId + "']");
+        const duration = parseFloat(durEl?.value ?? 0);
+        const distance = parseFloat(distEl?.value ?? 0);
 
-      try {
-        await postJson(`/api/workouts/exercises/${workoutExerciseId}/sets`, {
-          userId: state.userId, weightKg, reps,
-        });
-        if (weightEl) weightEl.value = "";
-        if (repsEl)   repsEl.value   = "";
-        await loadActiveSession();
-      } catch (e) { alert(e.message); }
+        if (!duration || duration <= 0) { alert("Durasi wajib diisi (menit)."); return; }
+
+        try {
+          await postJson("/api/workouts/exercises/" + workoutExerciseId + "/sets", {
+            userId: state.userId,
+            durationMinutes: duration,
+            distanceKm: distance || 0,
+          });
+          if (durEl)  durEl.value  = "";
+          if (distEl) distEl.value = "";
+          await loadActiveSession();
+        } catch (e) { alert(e.message); }
+
+      } else {
+        const weightEl = document.querySelector(".set-weight[data-we='" + workoutExerciseId + "']");
+        const repsEl   = document.querySelector(".set-reps[data-we='"   + workoutExerciseId + "']");
+        const weightKg = parseFloat(weightEl?.value ?? 0);
+        const reps     = parseInt(repsEl?.value ?? 0);
+
+        if (!reps || reps < 1)   { alert("Reps wajib diisi."); return; }
+        if (weightKg < 0)        { alert("Berat tidak boleh negatif."); return; }
+
+        try {
+          await postJson("/api/workouts/exercises/" + workoutExerciseId + "/sets", {
+            userId: state.userId, weightKg, reps,
+          });
+          if (weightEl) weightEl.value = "";
+          if (repsEl)   repsEl.value   = "";
+          await loadActiveSession();
+        } catch (e) { alert(e.message); }
+      }
     }
 
     async function deleteSet(setId) {
       try {
-        await fetch(`/api/workouts/exercises/sets/${setId}?userId=${state.userId}`, { method: "DELETE" });
+        await fetch("/api/workouts/exercises/sets/" + setId + "?userId=" + state.userId, { method: "DELETE" });
         await loadActiveSession();
       } catch (e) { alert(e.message); }
     }
 
+    // ── Render ───────────────────────────────────────────────────────────────
 
     function renderWorkout() {
       const s = state.session;
@@ -283,7 +312,6 @@
       $("startBtn").disabled  = !!s;
       $("finishBtn").disabled = !s;
       $("cancelBtn").disabled = !s;
-
       if (!s) return;
 
       $("sessionId").textContent     = s.id;
@@ -295,43 +323,71 @@
     }
 
     function buildExerciseCard(ex) {
+      const libEx    = state.exerciseMap[ex.exerciseId];
+      const isCardio = libEx ? libEx.category === "cardio" : false;
+
+      const colHeaders = isCardio
+        ? "<span>Set</span><span>Menit</span><span>KM</span><span></span>"
+        : "<span>Set</span><span>KG</span><span>Reps</span><span></span>";
+
+      const setRows = (ex.sets ?? []).map((set) => {
+        const col2 = isCardio
+          ? esc(set.durationMinutes != null ? set.durationMinutes : "-")
+          : esc(set.weightKg);
+        const col3 = isCardio
+          ? esc(set.distanceKm != null ? set.distanceKm : "-")
+          : esc(set.reps);
+        return '<div class="grid grid-cols-4 gap-2 items-center py-1.5 border-b border-white/5 last:border-0">'
+          + '<span class="text-sm font-semibold text-white/50">' + esc(set.setNumber) + '</span>'
+          + '<span class="text-sm text-white/80">' + col2 + '</span>'
+          + '<span class="text-sm text-white/80">' + col3 + '</span>'
+          + '<button class="text-red-400/50 hover:text-red-400 text-xs transition-colors text-right" data-del="' + esc(set.id) + '">✕</button>'
+          + '</div>';
+      }).join("");
+
+      const inputForm = isCardio
+        ? '<input type="number" placeholder="Menit" min="0.1" step="0.5"'
+          + ' class="set-duration w-24 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#4cc9f0]/60 transition-colors"'
+          + ' data-we="' + esc(ex.id) + '">'
+          + '<input type="number" placeholder="KM" min="0" step="0.1"'
+          + ' class="set-distance w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#4cc9f0]/60 transition-colors"'
+          + ' data-we="' + esc(ex.id) + '">'
+        : '<input type="number" placeholder="KG" min="0" step="0.5"'
+          + ' class="set-weight w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors"'
+          + ' data-we="' + esc(ex.id) + '">'
+          + '<input type="number" placeholder="Reps" min="1"'
+          + ' class="set-reps w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors"'
+          + ' data-we="' + esc(ex.id) + '">';
+
+      const catBadge = isCardio
+        ? '<span class="text-xs bg-[#4cc9f0]/10 text-[#4cc9f0] px-2 py-0.5 rounded">cardio</span>'
+        : '<span class="text-xs bg-[#e63946]/10 text-[#e63946] px-2 py-0.5 rounded">strength</span>';
+
       const card = document.createElement("div");
       card.className = "bg-[#141414] border border-white/5 rounded-xl overflow-hidden";
-      card.innerHTML = `
-        <!-- Exercise header -->
-        <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
-          <h3 class="font-semibold text-white/90">${esc(ex.exerciseNameSnapshot)}</h3>
-          <span class="text-xs text-white/30">${esc(ex.sets.length)} set</span>
-        </div>
+      card.dataset.exerciseId = ex.exerciseId;
 
-        <!-- Set list -->
-        <div class="px-5 py-3">
-          <div class="grid grid-cols-4 gap-2 mb-2 text-xs text-white/30 uppercase tracking-widest">
-            <span>Set</span><span>KG</span><span>Reps</span><span></span>
-          </div>
-          ${ex.sets.map((set) => `
-            <div class="grid grid-cols-4 gap-2 items-center py-1.5 border-b border-white/5 last:border-0">
-              <span class="text-sm font-semibold text-white/50">${esc(set.setNumber)}</span>
-              <span class="text-sm text-white/80">${esc(set.weightKg)}</span>
-              <span class="text-sm text-white/80">${esc(set.reps)}</span>
-              <button class="text-red-400/50 hover:text-red-400 text-xs transition-colors text-right" data-del="${esc(set.id)}">✕</button>
-            </div>
-          `).join("")}
-        </div>
+      card.innerHTML =
+        '<div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">'
+          + '<div class="flex items-center gap-2">'
+          + '<h3 class="font-semibold text-white/90">' + esc(ex.exerciseNameSnapshot) + '</h3>'
+          + catBadge
+          + '</div>'
+          + '<span class="text-xs text-white/30">' + esc(ex.sets.length) + ' set</span>'
+        + '</div>'
+        + '<div class="px-5 py-3">'
+          + '<div class="grid grid-cols-4 gap-2 mb-2 text-xs text-white/30 uppercase tracking-widest">'
+          + colHeaders
+          + '</div>'
+          + setRows
+        + '</div>'
+        + '<div class="px-5 pb-4 flex gap-2 items-center">'
+          + inputForm
+          + '<button class="btn-add-set flex-1 py-2 rounded-lg text-sm font-semibold" data-add-set="' + esc(ex.id) + '" data-ex-id="' + esc(ex.exerciseId) + '">'
+          + '+ Add Set'
+          + '</button>'
+        + '</div>';
 
-        <!-- Add set form -->
-        <div class="px-5 pb-4 flex gap-2 items-center">
-          <input type="number" placeholder="KG" min="0" step="0.5"
-            class="set-weight w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors"
-            data-we="${esc(ex.id)}">
-          <input type="number" placeholder="Reps" min="1"
-            class="set-reps w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors"
-            data-we="${esc(ex.id)}">
-          <button class="btn-add-set flex-1 py-2 rounded-lg text-sm font-semibold" data-add-set="${esc(ex.id)}">
-            + Add Set
-          </button>
-        </div>
-      `;
       return card;
     }
 
@@ -345,25 +401,30 @@
         return matchSearch && matchMuscle;
       });
 
-      $("libCount").textContent = `${filtered.length} exercise`;
+      $("libCount").textContent = filtered.length + " exercise";
       const ul = $("libList");
       ul.innerHTML = "";
 
       if (filtered.length === 0) {
-        ul.innerHTML = `<li class="px-5 py-4 text-xs text-white/30">Tidak ada exercise.</li>`;
+        ul.innerHTML = '<li class="px-5 py-4 text-xs text-white/30">Tidak ada exercise.</li>';
         return;
       }
 
       filtered.forEach((ex) => {
+        const isCardio = ex.category === "cardio";
+        const catColor = isCardio ? "text-[#4cc9f0]" : "text-[#e63946]";
         const li = document.createElement("li");
         li.className = "flex items-center justify-between px-4 py-3 hover:bg-white/3 transition-colors";
-        li.innerHTML = `
-          <div>
-            <p class="text-sm font-medium text-white/90">${esc(ex.name)}</p>
-            <p class="text-xs text-white/30 mt-0.5">${esc(ex.muscleGroup)} · ${esc(ex.equipment)}</p>
-          </div>
-          <button class="btn-add text-xs px-3 py-1.5" data-lib-id="${esc(ex.id)}">+ Add</button>
-        `;
+        li.innerHTML =
+          '<div>'
+          + '<p class="text-sm font-medium text-white/90">' + esc(ex.name) + '</p>'
+          + '<p class="text-xs text-white/30 mt-0.5">'
+          + '<span class="' + catColor + '">' + esc(ex.category) + '</span>'
+          + ' · ' + esc(ex.muscleGroup) + ' · ' + esc(ex.equipment)
+          + '</p>'
+          + '</div>'
+          + '<button class="btn-add text-xs px-3 py-1.5" data-lib-id="' + esc(ex.id) + '">'
+          + '+ Add</button>';
         ul.append(li);
       });
     }
@@ -378,7 +439,7 @@
       });
       const text = await res.text();
       const data = text ? JSON.parse(text) : {};
-      if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+      if (!res.ok) throw new Error(data.message || "HTTP " + res.status);
       return data;
     }
 
@@ -393,44 +454,44 @@
     $("startBtn").addEventListener("click", startSession);
     $("finishBtn").addEventListener("click", finishSession);
     $("cancelBtn").addEventListener("click", cancelSession);
-
     $("libSearch").addEventListener("input", renderLibrary);
     $("libFilter").addEventListener("change", renderLibrary);
 
-    // Delegasi: add exercise dari library
     $("libList").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-lib-id]");
       if (btn) addExercise(Number(btn.dataset.libId));
     });
 
-    // Delegasi: add set & delete set dari workout panel
     $("exerciseItems").addEventListener("click", (e) => {
       const addBtn = e.target.closest("[data-add-set]");
-      if (addBtn) { addSet(Number(addBtn.dataset.addSet)); return; }
-
+      if (addBtn) {
+        addSet(Number(addBtn.dataset.addSet), Number(addBtn.dataset.exId));
+        return;
+      }
       const delBtn = e.target.closest("[data-del]");
       if (delBtn) deleteSet(Number(delBtn.dataset.del));
     });
 
     // init
 
-        (async () => {
-            const res = await fetch("/api/auth/me");
-            if (!res.ok) { window.location.href = "/login.html"; return; }
-            const user = await res.json();
+    (async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) { window.location.href = "/login.html"; return; }
+      const user = await res.json();
 
-            // ← tambah ini
-            if (user.role === "admin") {
-                window.location.href = "/admin.html";
-                return;
-            }
+      if (user.role === "admin") { window.location.href = "/admin.html"; return; }
 
-            state.userId = user.id;
-          $("userIdInput").value = user.id;
-          $("usernameLabel").textContent = user.username;
-          await loadLibrary();
-          await loadActiveSession();
-        })();
+      state.userId = user.id;
+      $("userIdInput").value = user.id;
+      $("usernameLabel").textContent = user.username;
+
+      if (user.role === "admin") {
+        $("adminLink").classList.remove("hidden");
+      }
+
+      await loadLibrary();
+      await loadActiveSession();
+    })();
 </script>
 
 </body>

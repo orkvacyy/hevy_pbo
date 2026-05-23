@@ -27,7 +27,6 @@ import java.util.Map;
 @RequestMapping("/api/workouts")
 public class WorkoutApiController {
 
-    // GET /api/workouts?userId=1 — riwayat sesi user
     @GetMapping
     public List<WorkoutSessionResponse> findByUser(@RequestParam Long userId) {
         WorkoutService workoutService = new WorkoutService();
@@ -36,7 +35,6 @@ public class WorkoutApiController {
                 .toList();
     }
 
-    // GET /api/workouts/active?userId=1
     @GetMapping("/active")
     public ResponseEntity<WorkoutSessionResponse> findActive(@RequestParam Long userId) {
         WorkoutService workoutService = new WorkoutService();
@@ -45,68 +43,76 @@ public class WorkoutApiController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    // POST /api/workouts/start
     @PostMapping("/start")
     public WorkoutSessionResponse start(@RequestBody StartSessionRequest req) {
         WorkoutService workoutService = new WorkoutService();
         return WorkoutSessionResponse.from(workoutService.startSession(req.getUserId()));
     }
 
-    // POST /api/workouts/{sessionId}/exercises
     @PostMapping("/{sessionId}/exercises")
     public WorkoutExerciseResponse addExercise(
             @PathVariable Long sessionId,
             @RequestBody AddExerciseRequest req) {
-
         WorkoutService workoutService = new WorkoutService();
         return WorkoutExerciseResponse.from(
                 workoutService.addExercise(req.getUserId(), sessionId, req.getExerciseId())
         );
     }
 
-    // POST /api/workouts/exercises/{workoutExerciseId}/sets
     @PostMapping("/exercises/{workoutExerciseId}/sets")
     public ResponseEntity<WorkoutSetResponse> addSet(
             @PathVariable Long workoutExerciseId,
             @RequestBody AddSetRequest req) {
 
         WorkoutService workoutService = new WorkoutService();
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                WorkoutSetResponse.from(
-                        workoutService.addSet(req.getUserId(), workoutExerciseId, req.getWeightKg(), req.getReps())
-                )
-        );
+        WorkoutSetResponse response;
+
+        if (req.isCardio()) {
+            response = WorkoutSetResponse.from(
+                    workoutService.addCardioSet(
+                            req.getUserId(),
+                            workoutExerciseId,
+                            req.getDurationMinutes(),
+                            req.getDistanceKm() != null ? req.getDistanceKm() : 0
+                    )
+            );
+        } else {
+            response = WorkoutSetResponse.from(
+                    workoutService.addSet(
+                            req.getUserId(),
+                            workoutExerciseId,
+                            req.getWeightKg(),
+                            req.getReps()
+                    )
+            );
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // DELETE /api/workouts/exercises/sets/{setId}
     @DeleteMapping("/exercises/sets/{setId}")
     public ResponseEntity<Void> deleteSet(
             @PathVariable Long setId,
             @RequestParam Long userId) {
-
         WorkoutService workoutService = new WorkoutService();
         workoutService.deleteSet(userId, setId);
         return ResponseEntity.noContent().build();
     }
 
-    // POST /api/workouts/{sessionId}/finish
     @PostMapping("/{sessionId}/finish")
     public WorkoutSessionResponse finish(
             @PathVariable Long sessionId,
             @RequestBody FinishSessionRequest req) {
-
         WorkoutService workoutService = new WorkoutService();
         return WorkoutSessionResponse.from(
                 workoutService.finishSession(req.getUserId(), sessionId, req.getNotes())
         );
     }
 
-    // DELETE /api/workouts/{sessionId} — cancel sesi
     @DeleteMapping("/{sessionId}")
     public ResponseEntity<Void> cancel(
             @PathVariable Long sessionId,
             @RequestParam Long userId) {
-
         WorkoutService workoutService = new WorkoutService();
         workoutService.cancelSession(userId, sessionId);
         return ResponseEntity.noContent().build();
