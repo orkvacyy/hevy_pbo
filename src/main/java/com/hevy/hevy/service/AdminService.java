@@ -21,7 +21,18 @@ public class AdminService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    //user management
+
+
+    public void requireAdmin(User user) {
+        if (user == null) {
+            throw new SecurityException("Belum login");
+        }
+        if (!user.isAdmin()) {
+            throw new SecurityException("Akses ditolak — bukan admin");
+        }
+    }
+
+    // user management
 
     public List<User> getAllUsers() {
         return userDao.findAll();

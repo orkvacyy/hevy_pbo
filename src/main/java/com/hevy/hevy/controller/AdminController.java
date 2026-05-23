@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,34 +27,28 @@ import java.util.Map;
 public class AdminController {
 
     private static final String SESSION_USER = "currentUser";
-
-    // Validasi
-    private void requireAdmin(HttpSession session) {
-        User user = (User) session.getAttribute(SESSION_USER);
-        if (user == null) throw new SecurityException("Belum login");
-        if (!user.isAdmin()) throw new SecurityException("Akses ditolak — bukan admin");
+    private User currentUser(HttpSession session) {
+        return (User) session.getAttribute(SESSION_USER);
     }
 
-    //user management
+    // user management
 
     @GetMapping("/users")
     public List<UserResponse> getAllUsers(HttpSession session) {
-        requireAdmin(session);
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session)); // throw di service, catch di @ExceptionHandler
         return adminService.getAllUsers().stream()
                 .map(UserResponse::from)
                 .toList();
     }
-
-
 
     @PutMapping("/users/{id}/deactivate")
     public ResponseEntity<UserResponse> deactivateUser(
             @PathVariable Long id,
             HttpSession session) {
 
-        requireAdmin(session);
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         return ResponseEntity.ok(UserResponse.from(adminService.deactivateUser(id)));
     }
 
@@ -64,8 +57,8 @@ public class AdminController {
             @PathVariable Long id,
             HttpSession session) {
 
-        requireAdmin(session);
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         return ResponseEntity.ok(UserResponse.from(adminService.activateUser(id)));
     }
 
@@ -75,31 +68,42 @@ public class AdminController {
             @RequestBody Map<String, String> body,
             HttpSession session) {
 
-        requireAdmin(session);
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         adminService.resetPassword(id, body.get("newPassword"));
         return ResponseEntity.noContent().build();
     }
 
-    // global exercise
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> hardDeleteUser(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
+        adminService.hardDeleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Global exercise management ───────────────────────────────────────────
 
     @PostMapping("/exercises")
     public ResponseEntity<ExerciseResponse> createGlobalExercise(
             @RequestBody CreateExerciseRequest req,
             HttpSession session) {
 
-        requireAdmin(session);
         req.setOwnerId(null); // global = owner null
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ExerciseResponse.from(adminService.createGlobalExercise(req)));
     }
 
     @GetMapping("/exercises")
     public List<ExerciseResponse> getAllExercises(HttpSession session) {
-        requireAdmin(session);
+        AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         ExerciseService exerciseService = new ExerciseService();
-        // findLibrary(null) = findAll() = semua exercise tanpa filter userId
         return exerciseService.findLibrary(null).stream()
                 .map(ExerciseResponse::from)
                 .toList();
@@ -111,8 +115,8 @@ public class AdminController {
             @RequestBody CreateExerciseRequest req,
             HttpSession session) {
 
-        requireAdmin(session);
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         return ExerciseResponse.from(adminService.updateGlobalExercise(id, req));
     }
 
@@ -121,22 +125,13 @@ public class AdminController {
             @PathVariable Long id,
             HttpSession session) {
 
-        requireAdmin(session);
         AdminService adminService = new AdminService();
+        adminService.requireAdmin(currentUser(session));
         adminService.deleteGlobalExercise(id);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> hardDeleteUser(
-            @PathVariable Long id,
-            HttpSession session) {
-
-        requireAdmin(session);
-        AdminService adminService = new AdminService();
-        adminService.hardDeleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
+    //catch exception yang dilempar service
 
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<Map<String, String>> handleForbidden(SecurityException e) {
