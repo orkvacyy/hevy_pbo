@@ -6,8 +6,121 @@
     <title>Hevy PBO — Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
+    <style>
+        .mono { font-family: 'Space Mono', monospace; }
+
+        /* table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table thead tr { border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .data-table thead th {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.25);
+            text-transform: uppercase;
+            padding: 12px 20px;
+            text-align: left;
+            font-weight: 400;
+        }
+        .data-table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.1s;
+        }
+        .data-table tbody tr:last-child { border-bottom: none; }
+        .data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .data-table tbody td {
+            padding: 14px 20px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+        .data-table tbody td:first-child {
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        /* badges */
+        .ops-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .ops-badge-admin    { background: rgba(230,57,70,0.18); color: #e63946; }
+        .ops-badge-user     { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); }
+        .ops-badge-active   { background: rgba(34,197,94,0.12); color: #22c55e; }
+        .ops-badge-inactive { background: rgba(234,179,8,0.12); color: #eab308; }
+        .ops-badge-strength { background: rgba(230,57,70,0.12); color: #e63946; }
+        .ops-badge-cardio   { background: rgba(76,201,240,0.1); color: #4cc9f0; }
+
+        /* action buttons */
+        .action-btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            padding: 5px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: rgba(255,255,255,0.45);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .action-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+        .action-btn.red { border-color: rgba(230,57,70,0.2); color: rgba(230,57,70,0.55); }
+        .action-btn.red:hover { border-color: #e63946; color: #e63946; }
+
+        /* add exercise btn */
+        .add-btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            padding: 7px 14px;
+            border-radius: 6px;
+            background: rgba(230,57,70,0.1);
+            border: 1px solid rgba(230,57,70,0.2);
+            color: #e63946;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .add-btn:hover { background: #e63946; color: #fff; border-color: #e63946; }
+
+        /* modal label */
+        .modal-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.1em;
+            display: block;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .modal-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .modal-input:focus { border-color: rgba(230,57,70,0.5); }
+        .modal-input::placeholder { color: rgba(255,255,255,0.2); }
+        .modal-input option { background: #111; }
+    </style>
 </head>
 <body class="bg-[#0f0f0f] text-white min-h-screen">
 
@@ -21,21 +134,15 @@
     </div>
 
     <nav class="flex-1 p-4 space-y-1">
-        <a href="/" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <a onclick="switchTab('users')" id="navUsers"
+           class="nav-item active cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Kelola User
+        </a>
+        <a onclick="switchTab('exercises')" id="navExercises"
+           class="nav-item cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 12h12"/></svg>
-            Library
-        </a>
-        <a href="/workout.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Workout
-        </a>
-        <a href="/history.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            History
-        </a>
-        <a href="/admin.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Admin
+            Kelola Exercise
         </a>
     </nav>
 
@@ -70,7 +177,7 @@
     </header>
 
     <!-- Stats -->
-    <section class="px-8 pt-6 grid grid-cols-3 gap-4">
+    <section class="px-8 pt-6 grid grid-cols-4 gap-4">
         <div class="stat-card rounded-xl p-5 border border-white/5">
             <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Total User</p>
             <p id="statUsers" class="text-3xl font-bold" style="font-family:'Syne',sans-serif;">0</p>
@@ -81,23 +188,27 @@
         </div>
         <div class="stat-card rounded-xl p-5 border border-white/5">
             <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Global Exercise</p>
-            <p id="statExercises" class="text-3xl font-bold text-[#4cc9f0]" style="font-family:'Syne',sans-serif;">0</p>
+            <p id="statGlobal" class="text-3xl font-bold text-[#4cc9f0]" style="font-family:'Syne',sans-serif;">0</p>
+        </div>
+        <div class="stat-card rounded-xl p-5 border border-white/5">
+            <p class="text-xs text-white/30 uppercase tracking-widest mb-2">Custom Exercise</p>
+            <p id="statCustom" class="text-3xl font-bold text-[#f8c848]" style="font-family:'Syne',sans-serif;">0</p>
         </div>
     </section>
 
     <!-- User management panel -->
     <section id="panelUsers" class="px-8 pt-6 pb-8">
         <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
-            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30" id="userStatusMsg">Memuat data user...</div>
+            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30 mono" id="userStatusMsg">Memuat data user...</div>
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="data-table">
                     <thead>
-                    <tr class="border-b border-white/5">
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Username</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Email</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Role</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Status</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Aksi</th>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
                     </thead>
                     <tbody id="userTableBody"></tbody>
@@ -110,22 +221,22 @@
     <section id="panelExercises" class="hidden px-8 pt-6 pb-8">
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-white/50">Kelola exercise global yang tersedia untuk semua user.</p>
-            <button onclick="openExerciseModal()" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Tambah Exercise Global
+            <button onclick="openExerciseModal()" class="add-btn">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Tambah Exercise
             </button>
         </div>
         <div class="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
-            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30" id="exStatusMsg">Memuat exercise global...</div>
+            <div class="px-5 py-3 border-b border-white/5 text-xs text-white/30 mono" id="exStatusMsg">Memuat exercise global...</div>
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="data-table">
                     <thead>
-                    <tr class="border-b border-white/5">
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Nama</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Kategori</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Muscle</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Equipment</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-white/30 uppercase tracking-widest">Aksi</th>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Kategori</th>
+                        <th>Muscle</th>
+                        <th>Equipment</th>
+                        <th>Aksi</th>
                     </tr>
                     </thead>
                     <tbody id="exTableBody"></tbody>
@@ -149,11 +260,10 @@
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-white/50">Reset password untuk user: <span id="resetUsernameLabel" class="text-white font-semibold"></span></p>
             <div>
-                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Password Baru</label>
-                <input id="newPasswordInput" type="password" placeholder="Min. 6 karakter"
-                       class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <label class="modal-label">Password Baru</label>
+                <input id="newPasswordInput" type="password" placeholder="Min. 6 karakter" class="modal-input">
             </div>
-            <p id="passwordError" class="text-xs text-[#e63946] min-h-4"></p>
+            <p id="passwordError" class="mono text-xs min-h-4" style="color:#e63946;"></p>
         </div>
         <div class="px-6 pb-6 flex gap-3">
             <button onclick="closePasswordModal()" class="flex-1 btn-ghost py-2.5 rounded-xl text-sm font-semibold">Batal</button>
@@ -175,20 +285,19 @@
         <div class="px-6 py-5 space-y-4">
             <input id="editExerciseId" type="hidden" value="">
             <div>
-                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Nama Exercise</label>
-                <input id="exGlobalName" type="text" placeholder="Contoh: Cable Fly"
-                       class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <label class="modal-label">Nama Exercise</label>
+                <input id="exGlobalName" type="text" placeholder="Contoh: Cable Fly" class="modal-input">
             </div>
             <div>
-                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Kategori</label>
-                <select id="exGlobalCategory" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <label class="modal-label">Kategori</label>
+                <select id="exGlobalCategory" class="modal-input">
                     <option value="strength">Strength</option>
                     <option value="cardio">Cardio</option>
                 </select>
             </div>
             <div>
-                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Muscle Group</label>
-                <select id="exGlobalMuscle" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <label class="modal-label">Muscle Group</label>
+                <select id="exGlobalMuscle" class="modal-input">
                     <option value="chest">Chest</option>
                     <option value="back">Back</option>
                     <option value="shoulders">Shoulders</option>
@@ -201,8 +310,8 @@
                 </select>
             </div>
             <div>
-                <label class="text-xs text-white/40 uppercase tracking-widest block mb-2">Equipment</label>
-                <select id="exGlobalEquipment" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#e63946]/60 transition-colors">
+                <label class="modal-label">Equipment</label>
+                <select id="exGlobalEquipment" class="modal-input">
                     <option value="barbell">Barbell</option>
                     <option value="dumbbell">Dumbbell</option>
                     <option value="machine">Machine</option>
@@ -211,7 +320,7 @@
                     <option value="other">Other</option>
                 </select>
             </div>
-            <p id="exerciseModalError" class="text-xs text-[#e63946] min-h-4"></p>
+            <p id="exerciseModalError" class="mono text-xs min-h-4" style="color:#e63946;"></p>
         </div>
         <div class="px-6 pb-6 flex gap-3">
             <button onclick="closeExerciseModal()" class="flex-1 btn-ghost py-2.5 rounded-xl text-sm font-semibold">Batal</button>
@@ -223,19 +332,29 @@
 <script>
     const $ = (id) => document.getElementById(id);
 
-    let users = [];
+    let users           = [];
     let globalExercises = [];
+    let allExercises    = [];
     let resetTargetUserId = null;
-    let activeTab = "users";
+    let activeTab       = "users";
 
     async function handleLogout() {
       await fetch("/api/auth/logout", { method: "POST" });
       window.location.href = "/login.html";
     }
+
     function switchTab(tab) {
       activeTab = tab;
+
+      // panel toggle
       $("panelUsers").classList.toggle("hidden", tab !== "users");
       $("panelExercises").classList.toggle("hidden", tab !== "exercises");
+
+      // sidebar nav highlight
+      $("navUsers").classList.toggle("active", tab === "users");
+      $("navExercises").classList.toggle("active", tab === "exercises");
+
+      // header tab highlight
       $("tabUsers").classList.toggle("bg-white/10", tab === "users");
       $("tabUsers").classList.toggle("text-white", tab === "users");
       $("tabUsers").classList.toggle("text-white/40", tab !== "users");
@@ -259,20 +378,26 @@
 
     async function loadGlobalExercises() {
       try {
-        const res = await fetch("/api/exercises");
+        const res = await fetch("/api/admin/exercises");
         if (!res.ok) throw new Error();
-        const all = await res.json();
-        globalExercises = all.filter((ex) => ex.scope === "global");
+        allExercises    = await res.json();
+        globalExercises = allExercises.filter((ex) => ex.scope === "global");
         renderExercises();
+        updateStats();
       } catch {
-        $("exStatusMsg").textContent = "Gagal memuat exercise global.";
+        $("exStatusMsg").textContent = "Gagal memuat exercise.";
       }
+    }
+
+    function updateStats() {
+      const customCount = allExercises.filter((ex) => ex.scope === "local").length;
+      $("statGlobal").textContent = globalExercises.length;
+      $("statCustom").textContent = customCount;
     }
 
     // render
 
     function renderUsers() {
-      const active = users.filter((u) => u.role !== "admin" && u.active !== false);
       $("statUsers").textContent       = users.length;
       $("statActiveUsers").textContent = users.filter((u) => u.active !== false).length;
 
@@ -285,28 +410,23 @@
         const isActive = user.active !== false;
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="font-medium text-white/90">${esc(user.username)}</td>
-          <td>${esc(user.email)}</td>
+          <td>${esc(user.username)}</td>
+          <td style="color:rgba(255,255,255,0.4);">${esc(user.email)}</td>
+          <td><span class="ops-badge ${isAdmin ? "ops-badge-admin" : "ops-badge-user"}">${esc(user.role)}</span></td>
+          <td><span class="ops-badge ${isActive ? "ops-badge-active" : "ops-badge-inactive"}">${isActive ? "Active" : "Inactive"}</span></td>
           <td>
-            <span class="badge ${isAdmin ? "badge-strength" : "badge-global"}">
-              ${esc(user.role)}
-            </span>
-          </td>
-          <td>
-            <span class="badge ${isActive ? "" : "badge-local"}" style="${isActive ? "background:rgba(17,163,106,0.15);color:#11a36a" : ""}">
-              ${isActive ? "Aktif" : "Nonaktif"}
-            </span>
-          </td>
-          <td>
-            ${isAdmin ? `<span class="text-xs text-white/20">—</span>` : `
-              <div class="flex gap-2">
-                <button class="btn-ghost text-xs px-3 py-1.5 rounded" onclick="toggleUser(${user.id}, ${isActive})">
-                  ${isActive ? "Nonaktifkan" : "Aktifkan"}
+            ${isAdmin ? `<span class="mono" style="font-size:10px; color:rgba(255,255,255,0.15);">—</span>` : `
+              <div style="display:flex; gap:8px;">
+                <button class="action-btn ${isActive ? "red" : ""}" onclick="toggleUser(${user.id}, ${isActive})">
+                  ${isActive ? "Deactivate" : "Activate"}
                 </button>
-                <button class="btn-ghost text-xs px-3 py-1.5 rounded" onclick="openPasswordModal(${user.id}, '${esc(user.username)}')">
-                  Reset Password
+                <button class="action-btn" onclick="openPasswordModal(${user.id}, '${esc(user.username)}')">
+                  Reset PW
                 </button>
-              </div>
+                <button class="action-btn red" onclick="hardDeleteUser(${user.id}, '${esc(user.username)}')">
+                  Hapus
+                </button>
+            </div>
             `}
           </td>
         `;
@@ -314,9 +434,7 @@
       });
     }
 
-
     function renderExercises() {
-      $("statExercises").textContent = globalExercises.length;
       const tbody = $("exTableBody");
       tbody.innerHTML = "";
       $("exStatusMsg").textContent = `${globalExercises.length} exercise global.`;
@@ -324,16 +442,16 @@
       globalExercises.forEach((ex) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="font-medium text-white/90">${esc(ex.name)}</td>
-          <td><span class="badge badge-${esc(ex.category)}">${esc(ex.category)}</span></td>
-          <td>${esc(ex.muscleGroup)}</td>
-          <td>${esc(ex.equipment)}</td>
+          <td>${esc(ex.name)}</td>
+          <td><span class="ops-badge ops-badge-${esc(ex.category)}">${esc(ex.category)}</span></td>
+          <td style="color:rgba(255,255,255,0.4);">${esc(ex.muscleGroup)}</td>
+          <td style="color:rgba(255,255,255,0.4);">${esc(ex.equipment)}</td>
           <td>
-            <div class="flex gap-2">
-              <button class="btn-ghost text-xs px-3 py-1.5 rounded" onclick="openEditExercise(${ex.id}, '${esc(ex.name)}', '${esc(ex.category)}', '${esc(ex.muscleGroup)}', '${esc(ex.equipment)}')">
+            <div style="display:flex; gap:8px;">
+              <button class="action-btn" onclick="openEditExercise(${ex.id}, '${esc(ex.name)}', '${esc(ex.category)}', '${esc(ex.muscleGroup)}', '${esc(ex.equipment)}')">
                 Edit
               </button>
-              <button class="btn-delete text-xs px-3 py-1.5 rounded" onclick="deleteGlobalExercise(${ex.id}, '${esc(ex.name)}')">
+              <button class="action-btn red" onclick="deleteGlobalExercise(${ex.id}, '${esc(ex.name)}')">
                 Hapus
               </button>
             </div>
@@ -359,8 +477,8 @@
     function openPasswordModal(userId, username) {
       resetTargetUserId = userId;
       $("resetUsernameLabel").textContent = username;
-      $("newPasswordInput").value = "";
-      $("passwordError").textContent = "";
+      $("newPasswordInput").value         = "";
+      $("passwordError").textContent      = "";
       $("modalPassword").classList.remove("hidden");
     }
 
@@ -404,13 +522,13 @@
     }
 
     function openEditExercise(id, name, category, muscle, equipment) {
-      $("exerciseModalTitle").textContent    = "Edit Exercise Global";
-      $("editExerciseId").value              = id;
-      $("exGlobalName").value                = name;
-      $("exGlobalCategory").value            = category;
-      $("exGlobalMuscle").value              = muscle;
-      $("exGlobalEquipment").value           = equipment;
-      $("exerciseModalError").textContent    = "";
+      $("exerciseModalTitle").textContent = "Edit Exercise Global";
+      $("editExerciseId").value           = id;
+      $("exGlobalName").value             = name;
+      $("exGlobalCategory").value         = category;
+      $("exGlobalMuscle").value           = muscle;
+      $("exGlobalEquipment").value        = equipment;
+      $("exerciseModalError").textContent = "";
       $("modalExercise").classList.remove("hidden");
     }
 
@@ -485,7 +603,6 @@
       if (!res.ok) { window.location.href = "/login.html"; return; }
       const user = await res.json();
 
-      // Guard: hanya admin yang boleh masuk
       if (user.role !== "admin") {
         window.location.href = "/";
         return;
@@ -493,7 +610,6 @@
 
       $("usernameLabel").textContent = user.username;
 
-      // Set tab default aktif
       switchTab("users");
 
       await Promise.all([loadUsers(), loadGlobalExercises()]);

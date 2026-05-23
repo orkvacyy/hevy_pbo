@@ -5,6 +5,7 @@ import com.hevy.hevy.dto.response.ExerciseResponse;
 import com.hevy.hevy.dto.response.UserResponse;
 import com.hevy.hevy.model.User;
 import com.hevy.hevy.service.AdminService;
+import com.hevy.hevy.service.ExerciseService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,8 @@ public class AdminController {
                 .map(UserResponse::from)
                 .toList();
     }
+
+
 
     @PutMapping("/users/{id}/deactivate")
     public ResponseEntity<UserResponse> deactivateUser(
@@ -92,6 +95,16 @@ public class AdminController {
                 .body(ExerciseResponse.from(adminService.createGlobalExercise(req)));
     }
 
+    @GetMapping("/exercises")
+    public List<ExerciseResponse> getAllExercises(HttpSession session) {
+        requireAdmin(session);
+        ExerciseService exerciseService = new ExerciseService();
+        // findLibrary(null) = findAll() = semua exercise tanpa filter userId
+        return exerciseService.findLibrary(null).stream()
+                .map(ExerciseResponse::from)
+                .toList();
+    }
+
     @PutMapping("/exercises/{id}")
     public ExerciseResponse updateGlobalExercise(
             @PathVariable Long id,
@@ -111,6 +124,17 @@ public class AdminController {
         requireAdmin(session);
         AdminService adminService = new AdminService();
         adminService.deleteGlobalExercise(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> hardDeleteUser(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        requireAdmin(session);
+        AdminService adminService = new AdminService();
+        adminService.hardDeleteUser(id);
         return ResponseEntity.noContent().build();
     }
 

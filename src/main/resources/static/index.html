@@ -209,15 +209,14 @@
         if (!res.ok) { window.location.href = "/login.html"; return; }
         const user = await res.json();
 
+        if (user.role === "admin") {
+            window.location.href = "/admin.html";
+            return;
+        }
+
         document.getElementById("userIdInput").value = user.id;
         document.getElementById("usernameLabel").textContent = user.username;
 
-        if (user.role === "admin") {
-            const adminLink = document.getElementById("adminLink");
-            if (adminLink) adminLink.classList.remove("hidden");
-        }
-
-        // initLibrary() ada di app.js — set userId lalu load exercises
         initLibrary(user.id);
     })();
 </script>

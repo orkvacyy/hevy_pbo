@@ -35,6 +35,12 @@ public class AdminService {
         return user;
     }
 
+    public void hardDeleteUser(Long userId) {
+        userDao.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+        userDao.hardDelete(userId);
+    }
+
     public User activateUser(Long userId) {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));

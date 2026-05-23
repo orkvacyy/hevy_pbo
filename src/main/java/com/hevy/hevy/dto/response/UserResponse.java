@@ -7,6 +7,7 @@ public class UserResponse {
     private String username;
     private String email;
     private String role;
+    private boolean active;
 
     //convert dari model ke dto
     public static UserResponse from(User user) {
@@ -15,6 +16,7 @@ public class UserResponse {
         dto.username = user.getUsername();
         dto.email = user.getEmail();
         dto.role = user.getRole();
+        dto.active   = user.isActive();
         return dto;
     }
 
@@ -22,4 +24,5 @@ public class UserResponse {
     public String getUsername() { return username; }
     public String getEmail() { return email; }
     public String getRole() { return role; }
+    public boolean isActive() { return active; }
 }

@@ -30,12 +30,18 @@ public class ExerciseService {
         }
 
         BaseExercise found = exercise.get();
+
+        // userId == null === admin
+        if (userId == null)
+        {
+            return exercise;
+        }
+
         if (found.isGlobal() || found.getOwnerId().equals(userId)) {
             return exercise;
         }
         throw new SecurityException("Exercise ini tidak bisa diakses user tersebut");
     }
-
     public BaseExercise create(String name, String category, String muscleGroup, String equipment, Long ownerId) {
         BaseExercise exercise = buildExercise(null, name, category, muscleGroup, equipment, ownerId);
         exerciseDao.save(exercise);
@@ -45,8 +51,13 @@ public class ExerciseService {
     public BaseExercise update(Long exerciseId, Long userId, String name, String muscleGroup, String equipment) {
         BaseExercise exercise = findAccessibleById(exerciseId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Exercise tidak ditemukan"));
-        if (exercise.isGlobal() && userId != null) {
+
+        // user biasa gabisa akses edit
+        if (userId != null && exercise.isGlobal()) {
             throw new SecurityException("User biasa tidak boleh mengubah exercise global");
+        }
+        if (userId != null && !exercise.getOwnerId().equals(userId)) {
+            throw new SecurityException("Exercise ini bukan milik user tersebut");
         }
 
         exercise.setName(name);
@@ -59,9 +70,15 @@ public class ExerciseService {
     public void delete(Long exerciseId, Long userId) {
         BaseExercise exercise = findAccessibleById(exerciseId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Exercise tidak ditemukan"));
-        if (exercise.isGlobal() && userId != null) {
+
+        // user biasa gabisa hapus global
+        if (userId != null && exercise.isGlobal()) {
             throw new SecurityException("User biasa tidak boleh menghapus exercise global");
         }
+        if (userId != null && !exercise.isGlobal() && !exercise.getOwnerId().equals(userId)) {
+            throw new SecurityException("Exercise ini bukan milik user tersebut");
+        }
+
         exerciseDao.delete(exerciseId);
     }
 

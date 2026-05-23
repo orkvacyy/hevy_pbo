@@ -129,6 +129,16 @@ public class UserDao implements BaseDao<User> {
         }
     }
 
+    public void hardDelete(Long id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Gagal menghapus user: " + e.getMessage(), e);
+        }
+    }
+
     public void resetPassword(Long id, String newPassword) {
         if (newPassword == null || newPassword.isBlank()) {
             throw new IllegalArgumentException("Password baru tidak boleh kosong");

@@ -415,16 +415,17 @@
     // init
 
         (async () => {
-          const res = await fetch("/api/auth/me");
-          if (!res.ok) { window.location.href = "/login.html"; return; }
-          const user = await res.json();
+            const res = await fetch("/api/auth/me");
+            if (!res.ok) { window.location.href = "/login.html"; return; }
+            const user = await res.json();
 
-          if (user.role === "admin") {
-            const adminLink = document.getElementById("adminLink");
-            if (adminLink) adminLink.classList.remove("hidden");
-          }
+            // ← tambah ini
+            if (user.role === "admin") {
+                window.location.href = "/admin.html";
+                return;
+            }
 
-          state.userId = user.id;
+            state.userId = user.id;
           $("userIdInput").value = user.id;
           $("usernameLabel").textContent = user.username;
           await loadLibrary();
